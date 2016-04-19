@@ -1,0 +1,110 @@
+uniform int outputID;
+uniform sampler2D envmap;
+uniform vec3 eyePos;
+varying vec3 normal;
+varying vec3 vertex;
+
+#define PI 3.1415926
+
+vec3 shadeDiffuseFromEye();
+
+vec3 shadePhong(vec3 lightPos);
+
+vec3 shadeEnvmapReflection();
+
+vec3 shadenew(vec3 lightPos);
+
+void main()
+{
+    if(outputID == 0)
+    {
+        gl_FragColor = vec4(shadeDiffuseFromEye(), 1.0);
+        return;
+    }
+    if(outputID == 1)
+    {
+        gl_FragColor = vec4(shadePhong(vec3(10, 10, 10)), 1.0);
+        return;
+    }
+    if(outputID == 2)
+    {
+        gl_FragColor = vec4(shadeEnvmapReflection(), 1.0);
+        return;
+    }
+    if(outputID == 3)
+    {
+        // Do something interesting here for extra credit.
+        gl_FragColor = 0.2*vec4(shadeEnvmapReflection(), 1.0)+vec4(shadenew(vec3(-100, -50, -50)), 1.0);
+        return;
+    }
+    // ...
+}
+
+vec3 shadeDiffuseFromEye()
+{
+    vec3 n = normalize(normal);
+    vec3 out_vec = normalize(eyePos - vertex);
+    float diffuse = abs(dot(out_vec, n));
+    return vec3(diffuse);
+}
+
+vec3 shadenew(vec3 lightPos)
+{   // TODO Part 6.
+    // TODO Compute Phong shading here. You can choose any color you like. But please
+    // TODO make sure that you have noticeable specular highlights in the shading.
+    // TODO Variables to use: eyePos, lightPos, normal, vertex
+    vec3 l = normalize(lightPos-vertex)*sin(1.0);
+    vec3 v = normalize(eyePos-vertex);
+    vec3 h = normalize(v+l);
+    vec3 n = sin(normal)*0.5;
+
+    vec3 amb = tan(0.6*vec3(0.5, 0.8, 1.0));
+    vec3 diff = 0.6*vec3(0.5, 0.8, 1.0)*vec3(max(0.0, dot(n, l)));
+    vec3 spec = 0.8*vec3(pow(max(0.0, dot(n, h)), 64.0));
+
+    vec3 f = amb+diff+spec;
+     
+    return f;
+}
+
+vec3 shadePhong(vec3 lightPos)
+{   // TODO Part 6.
+    // TODO Compute Phong shading here. You can choose any color you like. But please
+    // TODO make sure that you have noticeable specular highlights in the shading.
+    // TODO Variables to use: eyePos, lightPos, normal, vertex
+    vec3 l = normalize(lightPos-vertex);
+    vec3 v = normalize(eyePos-vertex);
+    vec3 h = normalize(v+l);
+    vec3 n = normal;
+
+    vec3 amb = 0.2*vec3(0.8, 0.5, 1.0);
+    vec3 diff = 0.6*vec3(0.8, 0.5, 1.0)*vec3(max(0.0, dot(n, l)));
+    vec3 spec = 0.8*vec3(pow(max(0.0, dot(n, h)), 64.0));
+
+    vec3 f = amb+diff+spec;
+     
+    return f;
+}
+
+vec3 shadeEnvmapReflection()
+{   // TODO Part 6.
+    // TODO Compute environment mapping based on reflection direction here.
+    // TODO First compute the reflection direction using eyePos, normal and vertex.
+    // TODO Then convert the reflection direction to spherical coordinates (theta, phi). 
+    // TODO Note that the up vector is along +Z axis.
+    // TODO Finally, grab the color from envmap using (theta, phi).
+    // TODO You will need to use function "vec4 texture2D(sampler2D tex, vec2 uv)" to 
+    // TODO get colors from textures. 
+    vec3 v = normalize(eyePos-vertex);
+    vec3 n = normalize(normal);
+    vec3 r = 2.0*n*(dot(v,n))-v;
+    float theta = acos(r.z);
+    float psi = atan(r.y/r.x);
+    vec2 uv;
+    uv.x = (psi/(2.0*PI));
+    uv.y = (theta/PI);
+    vec4 box = texture2D(envmap, uv);
+    
+    
+    return vec3(box.r, box.g, box.b);
+}

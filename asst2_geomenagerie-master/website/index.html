@@ -1,0 +1,307 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<style>  
+    div.padded {  
+      padding-top: 0px;  
+      padding-right: 100px;  
+      padding-bottom: 0.25in;  
+      padding-left: 100px;  
+    }  
+  </style> 
+<title>Annalise Hurst  |  CS 184</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="style.css" media="screen" />
+</head>
+<body>
+<br />
+<h1 align="middle">Assignment 2: GeoMenagerie</h1>
+    <h2 align="middle">Annalise Hurst</h2>
+
+    <div class="padded">
+        <p> In this assignment I explored 3D objects and how they are displayed and manipulated through topology and geometry. I implemented Bezier patches to display COLLADA files in a viewing and editing environment. I also implemented the ability to flip, split, and subdivide the loaded COLLADA file objects to allow manipulation of the topology and geometry of the mesh in ways not available with the original mesh. To enhance the view of the geometry created, I also calculated the normals for the mesh in order to use smoothed normal shading and created some basic shading techniques for viewing objects with. Finally I created by own COLLADA mesh using the techniques I learned throughout this assignment to display it.</p>
+
+    <h2 align="middle">Part 1: Fun with Bezier Patches</h2>
+        <p>In this part of the assignment I implemented bezier patches to be able to display loaded COLLADA objects based on 16 control points in 3D space given for each patch of the mesh. I used these control points that were stored in a 4x4 array to create a 8x8 array of grid of points to be displayed as 2 triangles for each grid cell. I used the matrix form of Cubic Bezier Curve to calculate the position of the points in the 8x8 grid. This uses a matrix form of the Catmull-Rom to interpolate the space curves between points based on a cubic polynomial curve and the constraint equations of the control points. This set up is illustrated at <a href="http://homepages.inf.ed.ac.uk/rbf/CVonline/LOCAL_COPIES/AV0405/DONAVANIK/bezier.html">this site</a> for defining bezier surfaces.</p>
+        <div align="center">
+            <table style="width=100%">
+                <tr>
+                    <td align="middle">
+                    <img src="images/bezteapot.png" width="800px" />
+                    <figcaption align="middle">Bezier Mesh</figcaption>
+                </tr>
+            </table>
+        </div>
+
+    <h2 align="middle">Part 2: Average normals for half-edge meshes</h2>
+        <p>For this part of the assignment I calculated and stored the area-weighted average normal vector for any given vertex. This vector is the vector that leaves the vertex approximately perpendicular to the mesh at that point based off of the surrounding faces of the vertex. Graphically depicted by:</p>
+        <div align="center">
+            <table style="width=100%">
+                <tr>
+                    <td align="middle">
+                    <img src="images/norm.png" width="200px" />
+                </tr>
+            </table>
+        </div> 
+        <p> I did this by iterating over every neighboring face of the vertex and summing up the area-weight normal of each face using the cross product of edges. Finally I returned the re-normalizes unit vector of the sum. This normal value was then used for smoothed normal shading of the mesh via linear interpolation. These effects are shown below. </p>
+        <div align="center">
+            <table style="width=100%">
+                <tr>
+                    <td align="middle">
+                    <img src="images/nonshaderswonormals.png" width="400px" />
+                    <figcaption align="middle">Without Normals</figcaption>
+                    <td align="middle">
+                    <img src="images/nonshaderwnormals.png" width="400px" />
+                    <figcaption align="middle">With Normals</figcaption>
+                </tr>
+            </table>
+        </div>
+        <div align="center">
+            <table style="width=100%">
+                <tr>
+                    <td align="middle">
+                    <img src="images/withoutnormals.png" width="400px" />
+                    <figcaption align="middle">GLSL Shaders Without Normals</figcaption>
+                    <td align="middle">
+                    <img src="images/withnormals.png" width="400px" />
+                    <figcaption align="middle">GLSL Shaders With Normals</figcaption>
+                </tr>
+            </table>
+        </div>
+
+    <h2 align="middle">Part 3: Edge Flip</h2>
+        <p>In this part of the assignment I implemented the edge flip functionality that allows selected edges on the mesh being displayed to be flipped. This ability allows the mesh topology to be edited and can later be used for subdivision. An edge flip is graphically depicted by:</p>
+        <div align="center">
+            <table style="width=100%">
+                <tr>
+                    <td align="middle">
+                    <img src="images/6_1.jpg" width="600px" />
+                    <figcaption align="middle">Edge Flip Diagram</figcaption>
+                </tr>
+            </table>
+        </div>
+        <p>I achieved this effect by iterating through the halfedgemesh of the given halfedge and setting all the vertices, edge, halfedges, and faces to their new values as depicted in the second half of the above diagram. A problem I encountered while completing this part was forgetting to set elements to new values or setting them with the wrong new value. Below I performed some flips on the teapot mesh.<p>
+
+        <div align="center">
+            <table style="width=100%">
+                <tr>
+                    <td align="middle">
+                    <img src="images/woflips.png" width="400px" />
+                    <figcaption align="middle">Without Flips</figcaption>
+                    <td align="middle">
+                    <img src="images/wflips.png" width="400px" />
+                    <figcaption align="middle">With Flips</figcaption>
+                </tr>
+            </table>
+        </div>
+
+    <h2 align="middle">Part 4: Edge Split</h2>
+        <p>This part was very similar to implementing part 3, but instead of flips I implemented splits for halfedges in the mesh. Splitting edges also allows for editing of the mesh's topology and will be used in subdivision. An edge split is graphically depicted by:</p>
+        <div align="center">
+            <table style="width=100%">
+                <tr>
+                    <td align="middle">
+                    <img src="images/6_2.jpg" width="600px" />
+                    <figcaption align="middle">Edge Split Diagram</figcaption>
+                </tr>
+            </table>
+        </div>
+        <p>Achieving edge splitting followed the same format and troubles as edge flipping except I also needed to create 3 new edges, 6 new halfedges, 3 new faces, and 1 new vertex. The new vertex position was on the midpoint of the given halfedge. I kept the original halfedge  and it’s twin and edge but scaled them down to be either the top or bottom edge leaving the new vertex depending on which way the halfedge was pointing so that it always pointed into the new vertex. Below I performed some splits on the teapot mesh.</p>
+        <div align="center">
+            <table style="width=100%">
+                <tr>
+                    <td align="middle">
+                    <img src="images/wosplits.png" width="400px" />
+                    <figcaption align="middle">Without Splits</figcaption>
+                    <td align="middle">
+                    <img src="images/wsplits.png" width="400px" />
+                    <figcaption align="middle">With Splits</figcaption>
+                </tr>
+            </table>
+        </div>
+
+    <h2 align="middle">Part 5: Upsampling via Loop Subdivision</h2>
+        <p>In this part of the assignment I used the previous methods of edge flipping and splitting to implement up-sampling via loop subdivision. First I calculated the new positions of the old vertices using the formula </p>
+        <p align="middle"><pre align="middle">newPosition = (1 - n*u) * original_position + u * neighbor_position_sum</pre></p>
+        <p> and stored them in the vertex as newPosition. Where n and u are specified by the graphic below. Second I calculated the new positions of the new vertices using the formula </p>
+        <p align="middle"><pre align="middle">new position = 3/8 * (A + B) + 1/8 * (C + D)</pre></p>
+        <p> where A, B, C, D are the vertex positions of the two triangles that include the pre-split edge. I stored these values in the pre-split edge as newPosition. These calculations are shown graphically below.</p>
+        <div align="center">
+            <table style="width=100%">
+                <tr>
+                    <td align="middle">
+                    <img src="images/6_3.jpg" width="400px" />
+                    <figcaption align="middle">Subdivision of Single Triangle</figcaption>
+                    <td align="middle">
+                    <img src="images/6_9.jpg" width="400px" />
+                    <figcaption align="middle">Updated Point Values</figcaption>
+                </tr>
+            </table>
+        </div>
+        <p>Next I split all of the edges on the mesh. A problem I had while implementing this part was making sure that new edges created by splitting were not split again. This would cause an infinite loop of splitting. I did so by setting all of the vertices’ isTrue value to false when calculating the new positions and set the condition to only split on edges that connect two old vertices. When an edge is split I set the new split vertices’ isNew value to true. I also set the value of isNew = true for the two new edges that didn't make up part of the original edge that was split. After this iterated over all edges that were new and flipped them. These two steps are shown graphically below.</p>
+        <div align="center">
+            <table style="width=100%">
+                <tr>
+                    <td align="middle">
+                    <img src="images/6_10.jpg" width="400px" />
+                    <figcaption align="middle">Achieving Subdivision With Splits and Flips</figcaption>
+                    <td align="middle">
+                </tr>
+            </table>
+        </div>
+        <p>I then experimented with subdivision on different meshes and discovered that sharp edges would become more smoothed, and that shapes that looked symmetrical originally might become lopsided after a few iterations of subdivision. I saw this specifically with the cube mesh. At first glance is seams like it is symmetrical but since each side face is only split in half it is impossible to have the same number of edges intersecting a vertex for all vertices. Some will always have 5 while others have 6, and this causes the new calculated points to be asymmetrical for the vertices. To fix this I split the edge on each face so that the topology of the cube was symmetric. This caused the cube to stay symmetric through subdivision. This is shown below along with some other subdivided meshes.</p>
+        <p>Cube</p>
+        <div align="center">
+            <table style="width=100%">
+                <tr>
+                    <td align="middle">
+                    <img src="images/box1.png" width="200px" />
+                    <img src="images/box2.png" width="200px" />
+                    <img src="images/box3.png" width="200px" />
+                    <img src="images/box4.png" width="200px" />
+                </tr>
+            </table>
+        </div>
+        <p>Symmetrical Cube</p>
+        <div align="center">
+            <table style="width=100%">
+                <tr>
+                    <td align="middle">
+                    <img src="images/cbox1.png" width="200px" />
+                    <img src="images/cbox2.png" width="200px" />
+                    <img src="images/cbox3.png" width="200px" />
+                    <img src="images/cbox4.png" width="200px" />
+                </tr>
+            </table>
+        </div>
+        <p>Torus</p>
+        <div align="center">
+            <table style="width=100%">
+                <tr>
+                    <td align="middle">
+                    <img src="images/t1.png" width="200px" />
+                    <img src="images/t2.png" width="200px" />
+                    <img src="images/t3.png" width="200px" />
+                    <img src="images/t4.png" width="200px" />
+                </tr>
+            </table>
+        </div>
+        <p>Cow</p>
+        <div align="center">
+            <table style="width=100%">
+                <tr>
+                    <td align="middle">
+                    <img src="images/cow1.png" width="250px" />
+                    <img src="images/cow2.png" width="250px" />
+                    <img src="images/cow3.png" width="250px" />
+                </tr>
+            </table>
+        </div>
+
+    <h2 align="middle">Part 6: Fun with Shaders</h2>
+        <p>In this part I implemented two different types of shaders. First I implemented Phong Shading. This uses the ambient light, diffuse light, and specular light to add color, shadow and shine to the object. For this I used the formula:</p>
+        <p align="middle"><pre align="middle">L = ka*Ia + kd*max(0,n ⋅ l)+ks*max(0,n ⋅ h)^p</pre></p>
+        <p>Where:</p>
+        <p>ka, kd, and ks are chosen constants for ambient, diffuse and speculator lighting</p> 
+        <p>Ia is the ambient light intensity or color you want for the object</p> 
+        <p>n is the normal vector</p>
+        <p>l is the light vector</p> 
+        <p>h is the bisector of light vector and the vector from the eye to the vertex</p>
+        <p>p is a constant chosen for the shininess of the object where the greater the value the more shine there is</p>
+        <p></p>
+        <p>The second shading method I implemented was environment map reflection shading. For this shading method I calculated the reflection direction of the light with the formula</p>
+        <p align="middle"><pre align="middle"> o =2(i ⋅ n)n−i</pre></p>
+        <p> Where the symbols are represented in the graphic below.</p>
+        <p> I then used this vector to find its theta and psi values in spherical coordinates with the formulas:</p>
+        <p align="middle"><pre align="middle">theta = acos(o.z)</pre></p>
+        <p align="middle"><pre align="middle">psi = atan(o.y/o.x)</pre></p>
+        <p> This conversion from (x,y,z) coordinates to spherical coordinates is also shown graphically below.</p>
+        <div align="center">
+            <table style="width=100%">
+                <tr>
+                    <td align="middle">
+                    <img src="images/8_.jpg" width="200px" />
+                    <figcaption align="middle">Calculating Reflection Direction</figcaption>
+                    <td align="middle">
+                    <img src="images/5_6.jpg" width="200px" />
+                    <figcaption align="middle">Spherical Coordinates</figcaption>
+                </tr>
+            </table>
+        </div>
+        <p>With the calculated theta and psi values I then used (psi/2pi) and (theta/pi) as texture coordinates to access the environment texture and map it to the mesh object. Some troubles I had in this part of the assignment were that I would forget to normalize my vectors, and I would flip my theta and psi values. The results of both Phong and Environment map reflection shading are shown below.</p>
+        <div align="center">
+            <table style="width=100%">
+                <tr>
+                    <td align="middle">
+                    <img src="images/phong.png" width="400px" />
+                    <figcaption align="middle">Phong Shading</figcaption>
+                    <td align="middle">
+                    <img src="images/reflec.png" width="400px" />
+                    <figcaption align="middle">Environment Map Reflection Shading</figcaption>
+                </tr>
+            </table>
+        </div>
+
+    <h2 align="middle">Part 7: Design your own mesh!</h2>
+        <p>In this final part I got to use Blender to design my own COLLADA file mesh. To do this I took a basic square shape cut it in half and mirrored it along the y,z plane. I then continually extruded and repositioned the vertices along the mesh to form it into the shape of a little girl in a dress based off an image I drew.<p> 
+             <div align="center">
+            <table style="width=100%">
+                <tr>
+                    <td align="middle">
+                    <img src="images/g.jpg" width="200px" />
+                </tr>
+            </table>
+        </div>
+        </p> The hair was the most difficult part. Since I was using a mirror function I couldn’t capture the asymmetry of the original image and because of manifold issues I was trying to keep the hair from being too complex and accidentally overlapping. After completing my mesh I performed subdivision on it and applied some different shading effects. While making the mesh I made sure that areas where I wanted sharp angles to not be effected by subdivision too heavily I would add a more edges right on either side of the edge so that the subdivision wouldn't change the position of the vertices too much. Here is my mesh below.</p>
+        <div align="center">
+            <table style="width=100%">
+                <tr>
+                    <td align="middle">
+                    <img src="images/g1.png" width="400px" />
+                    <img src="images/g2.png" width="400px" />
+                    <img src="images/g3.png" width="400px" />
+                    <figcaption align="middle">2 Rounds of Subdivision</figcaption>
+                </tr>
+            </table>
+        </div>
+        <p></p>
+        <div align="center">
+            <table style="width=100%">
+                <tr>
+                    <td align="middle">
+                    <img src="images/g4.png" width="400px" />
+                    <figcaption align="middle">GLSL Shading</figcaption>
+                </tr>
+            </table>
+        </div>
+        <p></p>
+        <div align="center">
+            <table style="width=100%">
+                <tr>
+                    <td align="middle">
+                    <img src="images/g5.png" width="400px" />
+                    <img src="images/g6.png" width="400px" />
+                    <img src="images/g7.png" width="400px" />
+                    <figcaption align="middle">Environment Map Reflection Shading</figcaption>
+                </tr>
+            </table>
+        </div>
+        <p></p>
+         <div align="center">
+            <table style="width=100%">
+                <tr>
+                    <td align="middle">
+                    <img src="images/g9.png" width="400px" />
+                    <figcaption align="middle">Mix of Phong and Environment Map Reflection Shading</figcaption>
+                </tr>
+            </table>
+        </div>
+
+
+</div>
+</body>
+</html>
+
+
+
+

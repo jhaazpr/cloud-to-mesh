@@ -18,9 +18,10 @@ namespace CGL {
         }
 
         void upsample(HalfedgeMesh& mesh);
+        void simplify(HalfedgeMesh& mesh);
     };
 
-    
+
 }
 
 #endif // STUDENT_CODE_H

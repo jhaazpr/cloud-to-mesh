@@ -268,6 +268,44 @@ namespace CGL {
         
     }
 
+    void HalfedgeMesh::face_quadric_error() {
+        // Itertate through all of the faces in the mesh and set their quadric_error values.
+        for (FaceIter f = this->facesBegin(); f != this->facesEnd(); f++) {
+            double a = f->normal().x;
+            double b = f->normal().y;
+            double c = f->normal().z;
+            double xo = f->halfedge()->vertex()->position.x;
+            double yo = f->halfedge()->vertex()->position.y;
+            double zo = f->halfedge()->vertex()->position.z;
+            double d = -a*xo - b*yo - c*zo;
+            double data[] = {pow(a,2.0),a*b,a*c,a*d,a*b,pow(b,2.0),b*c,b*d,a*c,b*c,pow(c,2.0),c*d,a*d,b*d,c*d,pow(d,2.0)};
+          f->quadric = Matrix4x4(data);
+        }
+    }
+
+    void HalfedgeMesh::vertex_quadric_error() {
+        for (VertexIter v = this->verticesBegin(); v != this->verticesEnd(); v++) {
+            Matrix4x4 sum;
+            HalfedgeCIter h = v->halfedge();    // get one of the outgoing halfedges of the vertex
+              do {
+                HalfedgeCIter h_twin = h->twin(); // get the vertex of the current halfedge.
+                FaceCIter f = h_twin->face();       // get face of twin halfedge.
+                sum += f->quadric;               //  Add to sum.
+                h = h_twin->next();               // move to the next outgoing halfedge of the vertex.
+              } while(h != v->halfedge());        // keep going until we're back at the beginning
+            v->quadric = sum;
+        }
+    }
+
+    double HalfedgeMesh::cost(VertexIter v0, VertexIter v1) {
+        // Vector4D v = Vector4D(v0.x,v0.y,v0.z,1)-Vector4D(v1.x,v1.y,v1.z,1);
+        Matrix4x4 Q = (v0->quadric + v1->quadric);
+        double data[] = {Q(0,0),Q(0,1),Q(0,2),Q(0,3),Q(1,0),Q(1,1),Q(1,2),Q(1,3),Q(2,0),Q(2,1),Q(2,2),Q(2,3),0,0,0,1};
+        Matrix4x4 Qu = Matrix4x4(data);
+        Vector4D v = Q.inv()*Vector4D(0,0,0,1);
+        return dot(v,(Q*v));
+    }
+
     void MeshResampler::upsample(HalfedgeMesh& mesh)
     // TODO Part 5.
     // This routine should increase the number of triangles in the mesh using Loop subdivision.

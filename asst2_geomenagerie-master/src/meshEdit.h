@@ -279,12 +279,14 @@ namespace CGL {
         // Control functions.
         void update_camera();
         void draw_meshes();
+        void draw_points();
 
         // Resets the camera to the canonical initial view position.
         void reset_camera();
 
         // Rendering functions.
         void renderMesh(HalfedgeMesh& mesh);
+        void renderPoints(HalfedgeMesh & mesh);
         void drawFaces(HalfedgeMesh& mesh);
         void drawEdges(HalfedgeMesh& mesh);
         void drawVertices(HalfedgeMesh& mesh);

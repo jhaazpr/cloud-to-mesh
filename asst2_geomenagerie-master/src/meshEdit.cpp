@@ -8,6 +8,10 @@
 
 namespace CGL {
 
+    //FIXME: idk if this should go here...
+    // Point cloud mode flag
+    static bool MODE_POINT_CLOUD = false;
+
     void MeshEdit::init() {
         smoothShading = false;
         shadingMode = false;
@@ -108,7 +112,11 @@ namespace CGL {
 
     void MeshEdit::render() {
         update_camera();
-        draw_meshes();
+        if (MODE_POINT_CLOUD) {
+          draw_points();
+        } else {
+          draw_meshes();
+        }
 
         // // Draw the helpful picking messages.
         if (showHUD) {
@@ -183,6 +191,16 @@ namespace CGL {
 
         // Execute all of the OpenGL commands.
         glFlush();
+    }
+
+    void MeshEdit::draw_points() {
+      //TODO: need to load the points into meshnodes somehow
+      for (vector<MeshNode>::iterator n = meshNodes.begin(); n != meshNodes.end(); n++) {
+          renderPoints(n->mesh);
+      }
+
+      // Execute all of the OpenGL commands.
+      glFlush();
     }
 
     // Guranteed to be called at the start.
@@ -1170,6 +1188,10 @@ namespace CGL {
             drawVertices(mesh);
             drawHalfedges(mesh);
         }
+    }
+
+    void MeshEdit::renderPoints(HalfedgeMesh& mesh) {
+      //TODO: something with drawVertices?
     }
 
     // Sets the current OpenGL color/style of a given mesh element, according to which elements are currently selected and hovered.

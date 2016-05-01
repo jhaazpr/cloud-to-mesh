@@ -10,6 +10,51 @@
 
 namespace CGL {
 
+    void BPA(){
+        while (true){
+            e_ij = get_active_edge(F);
+            while (e_ij){
+                s_k = ball_pivot(e_ij);
+                if (s_k && (not_used(s_k) || on_front(s_k))){
+                    output_triangle(s_i, s_k, s_j);
+                    join(e_ij, s_k , F);
+                    if (e_ki in F) glue(e_ik, e_ki , F);
+                    if (e_jk in F) glue(e_kj, e_jk, F);
+                }
+                 else{
+                    mark_as_boundary(e_ij);
+                }
+                e_ij = get_active_edge(F);
+            }
+
+            (s_i, s_j, s_k) = find_seed_triangle();
+            if ((s_i, s_j, s_k)){
+                output_triangle(s_i, s_j, s_k);
+                insert_edge(e_ij, F);
+                insert_edge(e_jk, F);
+                insert_edge(e_ki, F);
+            } else {
+                return;
+            }
+        }
+    }
+
+    EdgeIter get_active_edge(F){
+
+    }
+
+    Point ball_pivot(Edge e_ij){
+        // return s_k
+    }
+
+    Void join(e_ij, s_k , F){
+
+    }
+
+    Void glue(e, s , F){
+
+    }
+    
     void BezierPatch::preprocess() {
         // TODO Part 1.
         // TODO If you use the matrix form for Bezier patch evaluation, you will need to

@@ -275,6 +275,10 @@ namespace CGL {
             case 'P':
                 pointCloudMode = !pointCloudMode;
                 break;
+            case 'c':
+            case 'C':
+                constructMesh();
+                break;
             case 'q':
             case 'Q':
                 smoothShading = !smoothShading;
@@ -289,6 +293,13 @@ namespace CGL {
             default:
                 break;
         }
+    }
+
+    // Mesh Reconstruction stuff
+    void MeshEdit::constructMesh() {
+        cout << "Constructing Mesh... NYI" << endl;
+        PointCloud pc = pointCloudNodes.back().point_cloud;
+        BPA(pc.vertices);
     }
 
     void MeshEdit::selectNextHalfedge(void) {

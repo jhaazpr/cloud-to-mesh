@@ -386,7 +386,9 @@ namespace CGL {
 
         inline Vector2D unitCubeToScreenSpace(Vector4D & in);
 
-
+        // -- Mesh Construction
+        // Keyboard callback function
+        void constructMesh(void);
 
         // -- Geometric Operations
         // Local operations on current element.

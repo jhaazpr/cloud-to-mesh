@@ -10,55 +10,59 @@
 
 namespace CGL {
 
-    void BPA(){
-        while (true){
-            e_ij = get_active_edge(F);
-            while (e_ij){
-                s_k = ball_pivot(e_ij);
-                if (s_k && (not_used(s_k) || on_front(s_k))){
-                    output_triangle(s_i, s_k, s_j);
-                    join(e_ij, s_k , F);
-                    if (e_ki in F) glue(e_ik, e_ki , F);
-                    if (e_jk in F) glue(e_kj, e_jk, F);
-                }
-                 else{
-                    mark_as_boundary(e_ij);
-                }
-                e_ij = get_active_edge(F);
-            }
-
-            (s_i, s_j, s_k) = find_seed_triangle();
-            if ((s_i, s_j, s_k)){
-                output_triangle(s_i, s_j, s_k);
-                insert_edge(e_ij, F);
-                insert_edge(e_jk, F);
-                insert_edge(e_ki, F);
-            } else {
-                return;
-            }
-        }
+    void BPA(std::vector<Vector3D>& vertices) {
+      cout << "BPA yo, voyteces: " << vertices.size() << endl;
     }
 
-    EdgeIter get_active_edge(F){
+    // void BPA(){
+    //     while (true){
+    //         e_ij = get_active_edge(F);
+    //         while (e_ij){
+    //             s_k = ball_pivot(e_ij);
+    //             if (s_k && (not_used(s_k) || on_front(s_k))){
+    //                 output_triangle(s_i, s_k, s_j);
+    //                 join(e_ij, s_k , F);
+    //                 if (e_ki in F) glue(e_ik, e_ki , F);
+    //                 if (e_jk in F) glue(e_kj, e_jk, F);
+    //             }
+    //              else{
+    //                 mark_as_boundary(e_ij);
+    //             }
+    //             e_ij = get_active_edge(F);
+    //         }
+    //
+    //         (s_i, s_j, s_k) = find_seed_triangle();
+    //         if ((s_i, s_j, s_k)){
+    //             output_triangle(s_i, s_j, s_k);
+    //             insert_edge(e_ij, F);
+    //             insert_edge(e_jk, F);
+    //             insert_edge(e_ki, F);
+    //         } else {
+    //             return;
+    //         }
+    //     }
+    // }
+    //
+    // EdgeIter get_active_edge(F){
+    //
+    // }
+    //
+    // Point ball_pivot(Edge e_ij){
+    //     // return s_k
+    // }
+    //
+    // Void join(e_ij, s_k , F){
+    //
+    // }
+    //
+    // Void glue(e, s , F){
+    //
+    // }
 
-    }
-
-    Point ball_pivot(Edge e_ij){
-        // return s_k
-    }
-
-    Void join(e_ij, s_k , F){
-
-    }
-
-    Void glue(e, s , F){
-
-    }
-    
     void BezierPatch::preprocess() {
         // TODO Part 1.
         // TODO If you use the matrix form for Bezier patch evaluation, you will need to
-        // TODO compute your matrices based on the 16 control points here. 
+        // TODO compute your matrices based on the 16 control points here.
         // TODO You will also need to define your matrices
         // TODO as member variables in the "BezierPatch" class.
         // TODO If you use De Casteljau's recursive algorithm, you will not need to do anything here.
@@ -124,12 +128,12 @@ namespace CGL {
             HalfedgeCIter h_twin = h->twin();
             Vector3D p1 = h_twin->vertex()->position;
             Vector3D edge1 = p0-p1;
-            
-            h = h_twin->next(); 
+
+            h = h_twin->next();
             Vector3D p2 = h->twin()->vertex()->position;
             Vector3D edge2 = p2-p0;
-   
-            n = n+cross(edge1,edge2); 
+
+            n = n+cross(edge1,edge2);
           } while(h != halfedge());
         return n.unit();
     }
@@ -172,32 +176,32 @@ namespace CGL {
         e4->halfedge() = he4;
         e5->halfedge() = he5;
 
-        he0->next() = he2; 
+        he0->next() = he2;
         he0->vertex() = a;
         he0->edge() = e1;
         he0->face() = f0;
 
-        he1->next() = he3; 
+        he1->next() = he3;
         he1->vertex() = b;
         he1->edge() = e2;
         he1->face() = f1;
 
-        he2->next() = he4; 
+        he2->next() = he4;
         he2->vertex() = d;
         he2->edge() = e3;
         he2->face() = f0;
 
-        he3->next() = he5; 
+        he3->next() = he5;
         he3->vertex() = d;
         he3->edge() = e1;
         he3->face() = f1;
 
-        he4->next() = he0; 
+        he4->next() = he0;
         he4->vertex() = c;
         he4->edge() = e4;
         he4->face() = f0;
 
-        he5->next() = he1; 
+        he5->next() = he1;
         he5->vertex() = a;
         he5->edge() = e5;
         he5->face() = f1;
@@ -235,7 +239,7 @@ namespace CGL {
         VertexIter e = newVertex();
         e->position = epos;
 
-        // new elements 
+        // new elements
         FaceIter f2 = newFace();
         FaceIter f3 = newFace();
         EdgeIter e6 = newEdge();
@@ -269,32 +273,32 @@ namespace CGL {
         d->halfedge() = he2;
         e->halfedge() = he6;
 
-        he0->next() = he8; 
+        he0->next() = he8;
         he0->vertex() = c;
         he0->edge() = e1;
         he0->face() = f0;
 
-        he1->next() = he9; 
+        he1->next() = he9;
         he1->vertex() = b;
         he1->edge() = e2;
         he1->face() = f3;
 
-        he2->next() = he0; 
+        he2->next() = he0;
         he2->vertex() = d;
         he2->edge() = e3;
         he2->face() = f0;
 
-        he3->next() = he4; 
+        he3->next() = he4;
         he3->vertex() = e;
         he3->edge() = e1;
         he3->face() = f1;
 
-        he4->next() = he10; 
+        he4->next() = he10;
         he4->vertex() = c;
         he4->edge() = e4;
         he4->face() = f1;
 
-        he5->next() = he7; 
+        he5->next() = he7;
         he5->vertex() = a;
         he5->edge() = e5;
         he5->face() = f2;
@@ -310,7 +314,7 @@ namespace CGL {
     }
 
     void MeshResampler::simplify(HalfedgeMesh& mesh){
-        
+
     }
 
     void HalfedgeMesh::face_quadric_error() {
@@ -378,7 +382,7 @@ namespace CGL {
                     VertexIter move = h_twin->vertex(); // vertex is 'source' of the half edge.
                                                   // so h->vertex() is v,
                                                   // whereas h_twin->vertex() is the neighbor vertex.
-                    neighbor_position_sum += move->position; 
+                    neighbor_position_sum += move->position;
                     n+= 1;
                     h = h_twin->next();               // move to the next outgoing halfedge of the vertex.
                 } while(h != move->halfedge());        // keep going until we're back at the beginning
@@ -456,7 +460,7 @@ namespace CGL {
 
           // ...we still have a valid reference to the next edge.
           ef = nextEdgef;
-        }  
+        }
 
 
         // TODO Finally, copy the new vertex positions into final Vertex::position.

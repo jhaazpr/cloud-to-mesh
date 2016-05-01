@@ -21,6 +21,9 @@ namespace CGL {
         void simplify(HalfedgeMesh& mesh);
     };
 
+    // Mesh Construction
+    void BPA(std::vector<Vector3D>& vertices);
+
 
 }
 

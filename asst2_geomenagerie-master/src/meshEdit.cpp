@@ -1,6 +1,7 @@
 #include "meshEdit.h"
 #include "shaderUtils.h"
 #include "GL/glew.h"
+#include <signal.h>
 
 #define PI 3.14159265
 
@@ -8,13 +9,10 @@
 
 namespace CGL {
 
-    //FIXME: idk if this should go here...
-    // Point cloud mode flag
-    static bool MODE_POINT_CLOUD = false;
-
     void MeshEdit::init() {
         smoothShading = false;
         shadingMode = false;
+        pointCloudMode = false;
         shaderProgID = loadShaders("shader/vert", "shader/frag");
         if (!shaderProgID)
             shaderProgID = loadShaders("../shader/vert", "../shader/frag");
@@ -105,14 +103,14 @@ namespace CGL {
         hoverStyle.strokeWidth = 4.0;
         selectStyle.strokeWidth = 8.0;
 
-        defaultStyle.vertexRadius = 2.0;
+        defaultStyle.vertexRadius = 5.0;
         hoverStyle.vertexRadius = 10.0;
         selectStyle.vertexRadius = 20.0;
     }
 
     void MeshEdit::render() {
         update_camera();
-        if (MODE_POINT_CLOUD) {
+        if (pointCloudMode) {
           draw_points();
         } else {
           draw_meshes();
@@ -195,8 +193,11 @@ namespace CGL {
 
     void MeshEdit::draw_points() {
       //TODO: need to load the points into meshnodes somehow
-      for (vector<MeshNode>::iterator n = meshNodes.begin(); n != meshNodes.end(); n++) {
-          renderPoints(n->mesh);
+      for (vector<PointCloudNode>::iterator n = pointCloudNodes.begin(); n != pointCloudNodes.end(); n++) {
+          // cout << "draw_points: point cloud #: " << pointCloudNodes.size() << endl;
+
+          // cout << "draw_points: # vertices: " << n->point_cloud.vertices.size() << endl;
+          renderPoints(n->point_cloud);
       }
 
       // Execute all of the OpenGL commands.
@@ -269,6 +270,10 @@ namespace CGL {
             case 'w':
             case 'W':
                 shadingMode = !shadingMode;
+                break;
+            case 'p':
+            case 'P':
+                pointCloudMode = !pointCloudMode;
                 break;
             case 'q':
             case 'Q':
@@ -415,6 +420,8 @@ namespace CGL {
                 case POLYMESH:
                     init_polymesh(static_cast<Polymesh&> (*instance));
                     break;
+                case POINT_CLOUD:
+                    init_point_cloud(static_cast<PointCloud&> (*instance));
                 case MATERIAL:
                     init_material(static_cast<Material&> (*instance));
                     break;
@@ -512,6 +519,37 @@ namespace CGL {
         camera_angles = Vector3D(0., 0., 0.);
         view_focus = centroid;
         up = Z_UP;
+    }
+
+    void MeshEdit::init_point_cloud(PointCloud& point_cloud) {
+
+      // Create and store a point cloud object.
+      // PointCloudNode this_should_work;
+      PointCloudNode pointCloudNode(point_cloud);
+      pointCloudNode.point_cloud = point_cloud;
+      pointCloudNodes.push_back(pointCloudNode);
+
+      // Ensure that the current selection always has a valid mesh pointer.
+      // selectedFeature.node = &pointCloudNode;
+
+      Vector3D low, high;
+      pointCloudNode.getBounds(low, high);
+
+      Vector3D centroid;
+      pointCloudNode.getCentroid(centroid);
+
+
+
+      // Determine how far away the camera should be.
+      // Minimum distance guaranteed to not clip into the model in C - V.
+      canonical_view_distance = (high - low).norm()*1.01; // norm is magnitude.
+      min_view_distance = canonical_view_distance / 10.0;
+      view_distance = canonical_view_distance * 2.;
+      max_view_distance = canonical_view_distance * 20.;
+
+      camera_angles = Vector3D(0., 0., 0.);
+      view_focus = centroid;
+      up = Z_UP;
     }
 
     void MeshEdit::init_material(Material& material) {
@@ -1190,8 +1228,48 @@ namespace CGL {
         }
     }
 
-    void MeshEdit::renderPoints(HalfedgeMesh& mesh) {
+    void MeshEdit::renderPoints(PointCloud& point_cloud) {
       //TODO: something with drawVertices?
+      glEnable(GL_PROGRAM_POINT_SIZE);
+      // glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+
+      // Vertex* v;
+      glDisable(GL_DEPTH_TEST);
+
+
+      // // Draw the hover vertex
+      // v = hoveredFeature.element->getVertex();
+      // if (v != NULL) {
+      //     setElementStyle(v);
+      //
+      //     glBegin(GL_POINTS);
+      //     Vector3D p = v->position;
+      //     glVertex3d(p.x, p.y, p.z);
+      //     glEnd();
+      // }
+
+      // Draw the selected vertex.
+      // v = selectedFeature.element->getVertex();
+      // if (v != NULL) {
+      //     setElementStyle(v);
+      //
+      //     glBegin(GL_POINTS);
+      //     Vector3D p = v->position;
+      //     glVertex3d(p.x, p.y, p.z);
+      //     glEnd();
+      // }
+      DrawStyle *style = &defaultStyle;
+      setColor(style->vertexColor);
+      glPointSize(style->vertexRadius);
+
+      //TODO: improve this, don't use loop
+      for (Vector3D v : point_cloud.vertices) {
+        glBegin(GL_POINTS);
+        glVertex3d(v.x, v.y, v.z);
+        glEnd();
+      }
+
+      glEnable(GL_DEPTH_TEST);
     }
 
     // Sets the current OpenGL color/style of a given mesh element, according to which elements are currently selected and hovered.
@@ -1393,6 +1471,27 @@ namespace CGL {
         }
     }
 
+    void PointCloudNode::getBounds(Vector3D& low, Vector3D& high) {
+        double maxValue = numeric_limits<double>::max();
+
+        low.x = maxValue;
+        high.x = -maxValue;
+        low.y = maxValue;
+        high.y = -maxValue;
+        low.z = maxValue;
+        high.z = -maxValue;
+
+        for (Vector3D v : point_cloud.vertices) {
+            low.x = min(low.x, v.x);
+            low.y = min(low.y, v.y);
+            low.z = min(low.z, v.z);
+
+            high.x = max(high.x, v.x);
+            high.y = max(high.y, v.y);
+            high.z = max(high.z, v.z);
+        }
+    }
+
     // Centroid / weighted average point.
 
     void MeshNode::getCentroid(Vector3D& centroid) {
@@ -1403,6 +1502,16 @@ namespace CGL {
         }
 
         centroid /= (double) mesh.nVertices();
+    }
+
+    void PointCloudNode::getCentroid(Vector3D& centroid) {
+        centroid = Vector3D(0., 0., 0.);
+
+        for (Vector3D v : point_cloud.vertices) {
+            centroid += v;
+        }
+
+        centroid /= (double) point_cloud.vertices.size();
     }
 
     /*

@@ -10,6 +10,7 @@
 #include "camera.h"
 #include "light.h"
 #include "mesh.h"
+#include "pointCloud.h"
 #include "material.h"
 #include "halfEdgeMesh.h"
 #include "student_code.h"
@@ -74,6 +75,7 @@ namespace CGL {
     };
 
     class MeshNode;
+    class PointCloudNode;
 
     // A MeshFeature is used to represent an element of the surface selected
     // by the user (e.g., edge, vertex, face).  No matter what kind of feature
@@ -197,6 +199,30 @@ namespace CGL {
 
     }; // class MeshNode.
 
+    class PointCloudNode {
+    public:
+      // I think this just has to wrap the pointCloud and nothing else in
+      // this case...
+
+      PointCloud point_cloud;
+
+      PointCloudNode(PointCloud& pointCloud) {
+        pointCloud = pointCloud;
+      }
+
+      ~PointCloudNode() {
+      }
+
+      /* Returns the lower and upper corners of the axis aligned
+       * bounding box for the mesh
+       */
+      void getBounds(Vector3D& low, Vector3D& high);
+
+      // Centroid / weighted average point.
+      void getCentroid(Vector3D& centroid);
+
+    }; // class PointCloudNode
+
 
     // The viewer class the manages the viewing and rendering of Collada Files.
 
@@ -230,6 +256,7 @@ namespace CGL {
         Scene* scene;
 
         vector<MeshNode> meshNodes;
+        vector<PointCloudNode> pointCloudNodes;
 
         // View Frustrum Variables.
         float hfov; // FIXME : I would like to specify the view frustrum
@@ -245,6 +272,7 @@ namespace CGL {
 
         bool shadingMode;
         bool smoothShading;
+        bool pointCloudMode;
 
         // Specify the location of eye and what it is pointing at.
         Vector3D view_focus;
@@ -274,6 +302,7 @@ namespace CGL {
         void init_camera(Camera& camera);
         void init_light(Light& light);
         void init_polymesh(Polymesh& polymesh);
+        void init_point_cloud(PointCloud& pointcloud);
         void init_material(Material& material);
 
         // Control functions.
@@ -286,7 +315,7 @@ namespace CGL {
 
         // Rendering functions.
         void renderMesh(HalfedgeMesh& mesh);
-        void renderPoints(HalfedgeMesh & mesh);
+        void renderPoints(PointCloud& point_cloud);
         void drawFaces(HalfedgeMesh& mesh);
         void drawEdges(HalfedgeMesh& mesh);
         void drawVertices(HalfedgeMesh& mesh);

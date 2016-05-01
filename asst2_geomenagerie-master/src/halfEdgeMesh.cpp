@@ -337,7 +337,7 @@ namespace CGL {
 
         // Now that we have the connectivity, we copy the list of vertex
         // positions into member variables of the individual vertices.
-        if (vertexPositions.size() != vertices.size()) {
+        if (!isPointCloud && vertexPositions.size() != vertices.size()) {
             cerr << "Error converting polygons to halfedge mesh: number of vertex positions is different from the number of distinct vertices!" << endl;
             cerr << "(number of positions in input: " << vertexPositions.size() << ")" << endl;
             cerr << "(  number of vertices in mesh: " << vertices.size() << ")" << endl;

@@ -54,6 +54,23 @@ int loadFile(MeshEdit* collada_viewer, const char* path) {
         std::vector<Vector3D> out_vertices;
         bool success = loadPLY(path, out_vertices);
         //TODO: actually use the points
+
+        // Set up scene
+        Camera* cam = new Camera();
+        cam->type = CAMERA;
+        Node node;
+        node.instance = cam;
+        scene->nodes.push_back(node);
+        PointCloud* point_cloud = new PointCloud();
+
+        // Add vertices to scene
+        for (Vector3D v : out_vertices) {
+          point_cloud->vertices.push_back(v);
+        }
+
+        point_cloud->type = POINT_CLOUD;
+        node.instance = point_cloud;
+        scene->nodes.push_back(node);
     } else {
         return -1;
     }
@@ -100,6 +117,8 @@ bool loadPLY(const char * path, std::vector<Vector3D> & out_vertices) {
             break;
         }
     }
+
+    cout << "LoadPLY: read number of vertices: " << vertex_count << endl;
 
     // Main loop of parsing vertices
     while (vertex_count-- > 0) {

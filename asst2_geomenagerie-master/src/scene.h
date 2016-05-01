@@ -22,6 +22,7 @@ namespace CGL {
         CAMERA,
         LIGHT,
         POLYMESH,
+        POINT_CLOUD,
         MATERIAL
     } InstanceType;
 

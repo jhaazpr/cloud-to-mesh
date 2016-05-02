@@ -10,8 +10,49 @@
 
 namespace CGL {
 
-    void BPA(std::vector<Vector3D>& vertices) {
+    Polymesh BPA(std::vector<Vector3D>& vertices) {
       cout << "BPA yo, voyteces: " << vertices.size() << endl;
+
+
+      // Build the HalfedgeMesh based on what we got
+      Polymesh pm;
+      PolyList polygons; // a std::vector of Polygon structs
+      std::vector<Vector3D> hc_vertices;
+
+
+      // Let's hard code to test!!
+      hc_vertices.push_back(Vector3D(1.0, 0.0, 0.0));
+      hc_vertices.push_back(Vector3D(0.0, 1.0, 0.0));
+      hc_vertices.push_back(Vector3D(0.0, 0.0, 1.0));
+      hc_vertices.push_back(Vector3D(-1.0, 0.0, 0.0));
+      hc_vertices.push_back(Vector3D(0.0, -1.0, 0.0));
+
+      Polygon polygon1;
+      polygon1.vertex_indices.push_back(0);
+      polygon1.vertex_indices.push_back(1);
+      polygon1.vertex_indices.push_back(2);
+
+      Polygon polygon2;
+      polygon2.vertex_indices.push_back(1);
+      polygon2.vertex_indices.push_back(3);
+      polygon2.vertex_indices.push_back(2);
+
+      Polygon polygon3;
+      polygon3.vertex_indices.push_back(3);
+      polygon3.vertex_indices.push_back(4);
+      polygon3.vertex_indices.push_back(2);
+
+      Polygon polygon4;
+      polygon4.vertex_indices.push_back(4);
+      polygon4.vertex_indices.push_back(0);
+      polygon4.vertex_indices.push_back(2);
+
+      pm.vertices = hc_vertices;
+      pm.polygons.push_back(polygon1);
+      pm.polygons.push_back(polygon2);
+      pm.polygons.push_back(polygon3);
+      pm.polygons.push_back(polygon4);
+      return pm;
     }
 
     // void BPA(){

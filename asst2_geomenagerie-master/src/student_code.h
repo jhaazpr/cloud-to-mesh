@@ -22,7 +22,7 @@ namespace CGL {
     };
 
     // Mesh Construction
-    void BPA(std::vector<Vector3D>& vertices);
+    Polymesh BPA(std::vector<Vector3D>& vertices);
 
 
 }

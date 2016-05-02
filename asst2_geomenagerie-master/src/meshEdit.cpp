@@ -277,6 +277,8 @@ namespace CGL {
                 break;
             case 'c':
             case 'C':
+                //FIXME: should not have to turn off pointCloude mode
+                pointCloudMode = false;
                 constructMesh();
                 break;
             case 'q':
@@ -297,9 +299,14 @@ namespace CGL {
 
     // Mesh Reconstruction stuff
     void MeshEdit::constructMesh() {
-        cout << "Constructing Mesh... NYI" << endl;
+        cout << "Constructing Mesh... " << endl;
         PointCloud pc = pointCloudNodes.back().point_cloud;
-        BPA(pc.vertices);
+        Polymesh pm = BPA(pc.vertices);
+
+        // use init_polymesh(pm)
+        cout << ".. built mesh ..." << endl;
+        init_polymesh(pm);
+        render();
     }
 
     void MeshEdit::selectNextHalfedge(void) {

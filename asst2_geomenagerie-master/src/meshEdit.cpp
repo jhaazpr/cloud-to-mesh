@@ -228,9 +228,17 @@ namespace CGL {
                 mesh_up_sample();
                 break;
 
+            case '-':
+                mesh_simplify();
+                break;
+
             case 'i':
             case 'I':
                 showHUD = !showHUD;
+                break;
+            case 'c':
+            case 'C':
+                collapseSelectedEdge();
                 break;
             case 'f':
             case 'F':
@@ -915,6 +923,25 @@ namespace CGL {
         hoveredFeature.invalidate();
     }
 
+    void MeshEdit::mesh_simplify() {
+        HalfedgeMesh* mesh;
+
+        // If an element is selected, resample the mesh containing that
+        // element; otherwise, resample the first mesh in the scene.
+        if (selectedFeature.isValid()) {
+            mesh = &(selectedFeature.node->mesh);
+        } else {
+            mesh = &(meshNodes.begin()->mesh);
+        }
+
+        resampler.simplify(*mesh);
+
+        // Since the mesh may have changed, the selected and
+        // hovered features may no longer point to valid elements.
+        selectedFeature.invalidate();
+        hoveredFeature.invalidate();
+    }
+
     inline void MeshEdit::drawString(float x, float y, string str, size_t size, Color c) {
         int line_index = text_mgr.add_line((x * 2 / screen_w) - 1.0,
                 (-y * 2 / screen_h) + 1.0, str, size, c);
@@ -1474,6 +1501,20 @@ namespace CGL {
         // Otherwise, the cursor is closest to the (middle of) the face itself.
         feature.element = f;
         return;
+    }
+
+    void MeshEdit::collapseSelectedEdge(void) {
+        Edge* e = selectedFeature.element->getEdge();
+        if (e == NULL) {
+            cerr << "Must select an edge." << endl;
+            return;
+        }
+        selectedFeature.node->mesh.collapseEdge(e->halfedge()->edge());
+
+        // Since the mesh may have changed, the selected and
+        // hovered features may no longer point to valid elements.
+        selectedFeature.invalidate();
+        hoveredFeature.invalidate();
     }
 
     void MeshEdit::flipSelectedEdge(void) {

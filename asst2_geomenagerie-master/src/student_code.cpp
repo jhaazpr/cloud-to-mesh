@@ -9,51 +9,35 @@
 #include "mutablePriorityQueue.h"
 
 namespace CGL {
+    // In case you want a pyramid NOW.
+    Polymesh BPA_hardcode(std::vector<Vector3D>& vertices);
 
+    /**
+     * Because of the interface in meshEdit that already exists, we need to return
+     * a Polymesh which then gets converted into a HalfedgeMesh. But, it's difficult
+     * to construct a Polymesh if we're doing a lot of edge operations. So, we become
+     * kludgy and create a HalfedgeMesh, using all the methods and trappings of a
+     * HalfedgeMesh, then rip the HalfedgeMesh's vertices and Polygons, put them into
+     * a Polymesh, which then gets refactored into a HalfedgeMesh anyway in the
+     * init_polymesh() function in meshEdit.cpp
+     */
     Polymesh BPA(std::vector<Vector3D>& vertices) {
       cout << "BPA yo, voyteces: " << vertices.size() << endl;
 
-
-      // Build the HalfedgeMesh based on what we got
-      Polymesh pm;
-      PolyList polygons; // a std::vector of Polygon structs
-      std::vector<Vector3D> hc_vertices;
-
-
-      // Let's hard code to test!!
-      hc_vertices.push_back(Vector3D(1.0, 0.0, 0.0));
-      hc_vertices.push_back(Vector3D(0.0, 1.0, 0.0));
-      hc_vertices.push_back(Vector3D(0.0, 0.0, 1.0));
-      hc_vertices.push_back(Vector3D(-1.0, 0.0, 0.0));
-      hc_vertices.push_back(Vector3D(0.0, -1.0, 0.0));
-
-      Polygon polygon1;
-      polygon1.vertex_indices.push_back(0);
-      polygon1.vertex_indices.push_back(1);
-      polygon1.vertex_indices.push_back(2);
-
-      Polygon polygon2;
-      polygon2.vertex_indices.push_back(1);
-      polygon2.vertex_indices.push_back(3);
-      polygon2.vertex_indices.push_back(2);
-
-      Polygon polygon3;
-      polygon3.vertex_indices.push_back(3);
-      polygon3.vertex_indices.push_back(4);
-      polygon3.vertex_indices.push_back(2);
-
-      Polygon polygon4;
-      polygon4.vertex_indices.push_back(4);
-      polygon4.vertex_indices.push_back(0);
-      polygon4.vertex_indices.push_back(2);
-
-      pm.vertices = hc_vertices;
-      pm.polygons.push_back(polygon1);
-      pm.polygons.push_back(polygon2);
-      pm.polygons.push_back(polygon3);
-      pm.polygons.push_back(polygon4);
+      Polymesh pm = BPA_hardcode(vertices);
       return pm;
     }
+
+    // BPAEdge::BPAEdge( Index i, Index j, BPAEdge& prev_edge, BPAEdge& next_edge,
+    //          BPALoop& my_loop )
+    //          : i(i), j(j), prev_edge(prev_edge), prev
+    // {
+    // }
+
+    // class Edge {
+    // public:
+    //   Edge();
+    // };
 
     // void BPA(){
     //     while (true){
@@ -515,5 +499,50 @@ namespace CGL {
 
     // TODO Part 6.
     // TODO There's also some code you'll need to complete in "Shader/frag" file.
+
+    Polymesh BPA_hardcode(std::vector<Vector3D>& vertices) {
+      cout << "BPA yo, voyteces: " << vertices.size() << endl;
+
+
+      // Build the HalfedgeMesh based on what we got
+      Polymesh pm;
+      PolyList polygons; // a std::vector of Polygon structs
+      std::vector<Vector3D> hc_vertices;
+
+
+      // Let's hard code to test!!
+      hc_vertices.push_back(Vector3D(1.0, 0.0, 0.0));
+      hc_vertices.push_back(Vector3D(0.0, 1.0, 0.0));
+      hc_vertices.push_back(Vector3D(0.0, 0.0, 1.0));
+      hc_vertices.push_back(Vector3D(-1.0, 0.0, 0.0));
+      hc_vertices.push_back(Vector3D(0.0, -1.0, 0.0));
+
+      Polygon polygon1;
+      polygon1.vertex_indices.push_back(0);
+      polygon1.vertex_indices.push_back(1);
+      polygon1.vertex_indices.push_back(2);
+
+      Polygon polygon2;
+      polygon2.vertex_indices.push_back(1);
+      polygon2.vertex_indices.push_back(3);
+      polygon2.vertex_indices.push_back(2);
+
+      Polygon polygon3;
+      polygon3.vertex_indices.push_back(3);
+      polygon3.vertex_indices.push_back(4);
+      polygon3.vertex_indices.push_back(2);
+
+      Polygon polygon4;
+      polygon4.vertex_indices.push_back(4);
+      polygon4.vertex_indices.push_back(0);
+      polygon4.vertex_indices.push_back(2);
+
+      pm.vertices = hc_vertices;
+      pm.polygons.push_back(polygon1);
+      pm.polygons.push_back(polygon2);
+      pm.polygons.push_back(polygon3);
+      pm.polygons.push_back(polygon4);
+      return pm;
+    }
 
 }

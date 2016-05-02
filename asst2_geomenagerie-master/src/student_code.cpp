@@ -367,13 +367,187 @@ namespace CGL {
         return e;
     }
 
-    void MeshResampler::simplify(HalfedgeMesh& mesh){
+    VertexIter HalfedgeMesh::collapseEdge(EdgeIter e0){
+        if (e0->isBoundary()) {
+            return VertexIter();
+        }
+        // HalfedgeIter h1 = e0->halfedge();
+        // HalfedgeIter h2 = h1->next();
+        // HalfedgeIter h3 = h2->next();
+        // HalfedgeIter h4 = h3->twin();
+        // HalfedgeIter h5 = h4->next();
+        // HalfedgeIter h6 = h5->next();
+        // HalfedgeIter h7 = h6->twin();
+        // HalfedgeIter h8 = h7->next();
+        // HalfedgeIter h9 = h8->next();
+        // HalfedgeIter h10 = h9->twin();
+        // HalfedgeIter h11 = h10->next();
+        // HalfedgeIter h12 = h11->next();
+        // HalfedgeIter h13 = h12->twin();
+        // HalfedgeIter h14 = h13->next();
+        // HalfedgeIter h15 = h14->next();
+        // HalfedgeIter h16 = h15->twin();
+        // HalfedgeIter h17 = h16->next();
+        // HalfedgeIter h18 = h17->next();
+        // HalfedgeIter h19 = h17->twin();
+        // HalfedgeIter h20 = h19->next();
+        // HalfedgeIter h21 = h20->next();
+        // HalfedgeIter h22 = h21->twin();
+        // HalfedgeIter h23 = h22->next();
+        // HalfedgeIter h24 = h23->next();
+        // HalfedgeIter h25 = h24->twin();
+        // HalfedgeIter h26 = h25->next();
+        // HalfedgeIter h27 = h26->next();
+        // HalfedgeIter h28 = h27->twin();
+        // HalfedgeIter h29 = h28->next();
+        // HalfedgeIter h30 = h29->next();
 
+
+        // FaceIter f1 = h1->face();
+        // FaceIter f2 = h18->face();
+        // FaceIter f3 = h30->face();
+        // FaceIter f4 = h4->face();
+        // FaceIter f5 = h14->face();
+        // FaceIter f6 = h19->face();
+        // FaceIter f7 = h25->face();
+        // FaceIter f8 = h24->face();
+        // FaceIter f9 = h7->face();
+        // FaceIter f10 = h10->face();
+
+        // EdgeIter e1 = h2->edge();
+        // EdgeIter e2 = h3->edge();
+        // EdgeIter e3 = h17->edge();
+        // EdgeIter e4 = h16->edge();
+        // EdgeIter e5 = h14->edge();
+        // EdgeIter e6 = h12->edge();
+        // EdgeIter e7 = h5->edge();
+        // EdgeIter e8 = h6->edge();
+        // EdgeIter e9 = h21->edge();
+        // EdgeIter e10 = h20->edge();
+        // EdgeIter e11 = h28->edge();
+        // EdgeIter e12 = h29->edge();
+        // EdgeIter e13 = h26->edge();
+        // EdgeIter e14 = h23->edge();
+        // EdgeIter e15 = h11->edge();
+        // EdgeIter e16 = h8->edge();
+        // EdgeIter e17 = h9->edge();
+        // EdgeIter e18 = h25->edge();
+
+        // VertexIter v1 = h4->vertex();
+        // VertexIter v2 = h18->vertex();
+        // VertexIter v3 = h3->vertex();
+        // VertexIter v4 = h17->vertex();
+        // VertexIter v5 = h12->vertex();
+        // VertexIter v6 = h27->vertex();
+        // VertexIter v7 = h23->vertex();
+        // VertexIter v8 = h6->vertex();
+        // VertexIter v9 = h24->vertex();
+        // VertexIter v10 = h9->vertex();
+
+        HalfedgeIter h1 = e0->halfedge();
+        HalfedgeIter h2 = h1->next();
+        HalfedgeIter h3 = h2->next();
+        HalfedgeIter h4 = h3->twin();
+        HalfedgeIter h7 = h4->next()->next()->twin();
+        HalfedgeIter h10 = h7->next()->next()->twin();
+        HalfedgeIter h13 = h10->next()->next()->twin();
+        HalfedgeIter h14 = h13->next();
+        HalfedgeIter h15 = h14->next();
+        HalfedgeIter h18 = h1->twin();
+        HalfedgeIter h16 = h18->next();
+        HalfedgeIter h17 = h16->next();
+        HalfedgeIter h19 = h17->twin();
+        HalfedgeIter h22 = h19->next()->next()->twin();
+        HalfedgeIter h25 = h22->next()->next()->twin();
+        HalfedgeIter h28 = h25->next()->next()->twin();
+        HalfedgeIter h29 = h28->next();
+        HalfedgeIter h30 = h29->next();
+
+        FaceIter f1 = h1->face();
+        FaceIter f2 = h18->face();
+        FaceIter f3 = h30->face();
+        FaceIter f5 = h15->face();
+
+        EdgeIter e1 = h2->edge();
+        EdgeIter e4 = h16->edge();
+
+        VertexIter v1 = h1->vertex();
+        VertexIter v2 = h18->vertex();
+        VertexIter v3 = h3->vertex();
+        VertexIter v4 = h17->vertex();
+
+
+        h4->vertex() = v1;
+        h7->vertex() = v1;
+        h10->vertex() = v1;
+        h13->vertex() = v1;
+        h19->vertex() = v1;
+        h22->vertex() = v1;
+        h25->vertex() = v1;
+        h28->vertex() = v1;
+
+        h3->next() = h28;
+        h29->next() = h3;
+
+        h17->next() = h13;
+        h14->next() = h17;
+
+        h3->face() = f3;
+        h17->face() = f5;
+
+        f3->halfedge() = h3;
+        f5->halfedge() = h17;
+
+        v1->halfedge() = h4;
+        v3->halfedge() = h3;
+        v4->halfedge() = h17;
+
+        Vector3D p = (v1->position+v2->position)/2.0;
+        v1->position = p;
+        v2->position = p;
+
+        deleteVertex(v2);
+
+        deleteFace(f1);
+        deleteFace(f2);
+
+        deleteEdge(e0);
+        deleteEdge(e1);
+        deleteEdge(e4);
+
+        deleteHalfedge(h2);
+        deleteHalfedge(h30);
+        deleteHalfedge(h16);
+        deleteHalfedge(h15);
+        // deleteHalfedge(h18);
+        // deleteHalfedge(h1);
+        
+        
+        return v1;
+        // return VertexIter();
     }
 
-    void HalfedgeMesh::face_quadric_error() {
-        // Itertate through all of the faces in the mesh and set their quadric_error values.
-        for (FaceIter f = this->facesBegin(); f != this->facesEnd(); f++) {
+    EdgeRecord::EdgeRecord( EdgeIter& _edge )
+   : edge( _edge )
+   {
+        VertexIter v1 = _edge->halfedge()->vertex();
+        VertexIter v2 = _edge->halfedge()->twin()->vertex();
+        Matrix4x4 K = v1->quadric+v2->quadric;
+        double data[] = {K(0,0),K(0,1),K(0,2),K(1,0),K(1,1),K(1,2),K(2,0),K(2,1),K(2,2)};
+        Matrix3x3 A = Matrix3x3(data);
+        Vector3D b = Vector3D(-K(0,3),-K(1,3),-K(2,3));
+        Vector3D x = A.inv() * b;
+        optimalPoint = x;
+        score = dot(x,(K*x));
+        edge = _edge;
+    }
+
+    void MeshResampler::simplify( HalfedgeMesh& mesh )
+   {
+      // TODO Compute initial quadrics for each face by simply writing the plane
+      // equation for the face in homogeneous coordinates.  These quadrics should
+      // be stored in Face::quadric
+        for (FaceIter f = mesh.facesBegin(); f != mesh.facesEnd(); f++) {
             double a = f->normal().x;
             double b = f->normal().y;
             double c = f->normal().z;
@@ -381,13 +555,14 @@ namespace CGL {
             double yo = f->halfedge()->vertex()->position.y;
             double zo = f->halfedge()->vertex()->position.z;
             double d = -a*xo - b*yo - c*zo;
-            double data[] = {pow(a,2.0),a*b,a*c,a*d,a*b,pow(b,2.0),b*c,b*d,a*c,b*c,pow(c,2.0),c*d,a*d,b*d,c*d,pow(d,2.0)};
-          f->quadric = Matrix4x4(data);
+            Vector4D v = Vector4D(a,b,c,d);
+            f->quadric = outer(v,v);
         }
-    }
 
-    void HalfedgeMesh::vertex_quadric_error() {
-        for (VertexIter v = this->verticesBegin(); v != this->verticesEnd(); v++) {
+
+      // TODO Compute an initial quadric for each vertex as the sum of the quadrics
+      // associated with the incident faces, storing it in Vertex::quadric
+        for (VertexIter v = mesh.verticesBegin(); v != mesh.verticesEnd(); v++) {
             Matrix4x4 sum;
             HalfedgeCIter h = v->halfedge();    // get one of the outgoing halfedges of the vertex
               do {
@@ -398,16 +573,63 @@ namespace CGL {
               } while(h != v->halfedge());        // keep going until we're back at the beginning
             v->quadric = sum;
         }
-    }
 
-    double HalfedgeMesh::cost(VertexIter v0, VertexIter v1) {
-        // Vector4D v = Vector4D(v0.x,v0.y,v0.z,1)-Vector4D(v1.x,v1.y,v1.z,1);
-        Matrix4x4 Q = (v0->quadric + v1->quadric);
-        double data[] = {Q(0,0),Q(0,1),Q(0,2),Q(0,3),Q(1,0),Q(1,1),Q(1,2),Q(1,3),Q(2,0),Q(2,1),Q(2,2),Q(2,3),0,0,0,1};
-        Matrix4x4 Qu = Matrix4x4(data);
-        Vector4D v = Q.inv()*Vector4D(0,0,0,1);
-        return dot(v,(Q*v));
-    }
+
+      // TODO Build a priority queue of edges according to their quadric error cost,
+      // TODO i.e., by building an EdgeRecord for each edge and sticking it in the queue.
+
+        MutablePriorityQueue<EdgeRecord> queue;
+        for(EdgeIter e = mesh.edgesBegin(); e != mesh.edgesEnd(); e++) {
+            EdgeRecord myRecord(e);
+            queue.insert(myRecord);
+        }
+        
+        Size Start = mesh.nFaces();
+        // while(mesh.nFaces() >= 10) {
+            cout << Start << endl;
+            // Get the cheapest edge from the queue.
+            EdgeRecord bestEdge = queue.top();
+            // Remove the cheapest edge from the queue by calling pop().
+            queue.pop();
+            // Compute the new quadric by summing the quadrics at its two endpoints.
+            VertexIter v1 = bestEdge.edge->halfedge()->vertex();
+            VertexIter v2 = bestEdge.edge->halfedge()->twin()->vertex();
+            Matrix4x4 K = v1->quadric+v2->quadric; 
+            VertexIter verts[] = {v1,v2};
+            // Remove any edge touching either of its endpoints from the queue.
+            for (VertexIter vr: verts) {
+                HalfedgeIter h1 = vr->halfedge();    // get one of the outgoing halfedges of the vertex
+                do {
+                    HalfedgeIter h1_twin = h1->twin(); // get the vertex of the current halfedge
+                    VertexIter vr = h1_twin->vertex(); // vertex is 'source' of the half edge.
+                    queue.remove(h1_twin->edge());
+                    h1 = h1_twin->next();               // move to the next outgoing halfedge of the vertex.
+                  } while(h1 != vr->halfedge());        // keep going until we're back at the beginning
+            }
+            // Collapse the edge.
+            VertexIter v = mesh.collapseEdge(bestEdge.edge);
+            mesh.edgesBegin();
+            cout << Start << endl;
+            v->position = bestEdge.optimalPoint;
+            // Set the quadric of the new vertex to the quadric computed in Step 2.
+            v->quadric = K;
+            // Insert any edge touching the new vertex into the queue, creating new edge records for each of them.
+            HalfedgeIter h = v->halfedge();    // get one of the outgoing halfedges of the vertex
+            do {
+                HalfedgeIter h_twin = h->twin(); // get the vertex of the current halfedge
+                VertexIter v = h_twin->vertex(); // vertex is 'source' of the half edge.
+                EdgeRecord myRecord(h_twin->edge());
+                queue.insert(myRecord);
+                h = h_twin->next();               // move to the next outgoing halfedge of the vertex.
+              } while(h != v->halfedge());        // keep going until we're back at the beginning
+        // }
+
+      // TODO Until we reach the target edge budget, collapse the best edge.  Remember
+      // TODO to remove from the queue any edge that touches the collapsing edge BEFORE
+      // TODO it gets collapsed, and add back into the queue any edge touching the collapsed
+      // TODO vertex AFTER it's been collapsed.  Also remember to assign a quadric to the
+      // TODO collapsed vertex, and to pop the collapsed edge off the top of the queue.
+   }
 
     void MeshResampler::upsample(HalfedgeMesh& mesh)
     // TODO Part 5.
@@ -447,6 +669,7 @@ namespace CGL {
             }
             v->newPosition = (1.0 - n*u) * original_position + u * neighbor_position_sum;
         }
+
 
         // TODO Next, compute the updated vertex positions associated with edges, and store it in Edge::newPosition.
         for(EdgeIter e = mesh.edgesBegin(); e != mesh.edgesEnd(); e++) {

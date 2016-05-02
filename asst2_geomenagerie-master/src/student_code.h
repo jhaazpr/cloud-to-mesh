@@ -42,22 +42,26 @@ namespace CGL {
       BPALoop& my_loop;
 
       /**
-       * To do
+       * Takes in the index of a vertex and inserts edges ik and kj
+       * by removing the edge ij from the loop the edge belongs too.
        */
-      void join(Index index);
+      void join(Index k);
 
       /**
-       * To do
+       * If other_edge utilizes the same points, as this edge does, 
+       * resolve the conflict by removing one of the edges. 
        */
       void glue(BPAEdge other_edge, BPAFront front);
 
       /**
-       * To do
+       *  Rotates the ball by considering all points within a 2*rho radius
+       *  and checking whether the center lies on the circle gamma. Returns
+       *  True if a vertex k was found.
        */
-      Vector3D ball_pivot(double rho);
+      bool ball_pivot(double rho, Vector3D& k);
 
       /**
-       * To do
+       * Marks an edge as boundary if already fully explored.
        */
       void mark_boundary(void);
 

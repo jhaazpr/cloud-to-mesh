@@ -598,6 +598,8 @@ namespace CGL {
     class HalfedgeMesh {
     public:
 
+        bool isPointCloud;
+
         /**
          * Constructor.
          */

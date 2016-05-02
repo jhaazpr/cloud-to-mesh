@@ -9,11 +9,85 @@
 #include "mutablePriorityQueue.h"
 
 namespace CGL {
+    // In case you want a pyramid NOW.
+    Polymesh BPA_hardcode(std::vector<Vector3D>& vertices);
+
+    /**
+     * Because of the interface in meshEdit that already exists, we need to return
+     * a Polymesh which then gets converted into a HalfedgeMesh. But, it's difficult
+     * to construct a Polymesh if we're doing a lot of edge operations. So, we become
+     * kludgy and create a HalfedgeMesh, using all the methods and trappings of a
+     * HalfedgeMesh, then rip the HalfedgeMesh's vertices and Polygons, put them into
+     * a Polymesh, which then gets refactored into a HalfedgeMesh anyway in the
+     * init_polymesh() function in meshEdit.cpp
+     */
+    Polymesh BPA(std::vector<Vector3D>& vertices) {
+      cout << "BPA yo, voyteces: " << vertices.size() << endl;
+
+      Polymesh pm = BPA_hardcode(vertices);
+      return pm;
+    }
+
+    // BPAEdge::BPAEdge( Index i, Index j, BPAEdge& prev_edge, BPAEdge& next_edge,
+    //          BPALoop& my_loop )
+    //          : i(i), j(j), prev_edge(prev_edge), prev
+    // {
+    // }
+
+    // class Edge {
+    // public:
+    //   Edge();
+    // };
+
+    // void BPA(){
+    //     while (true){
+    //         e_ij = get_active_edge(F);
+    //         while (e_ij){
+    //             s_k = ball_pivot(e_ij);
+    //             if (s_k && (not_used(s_k) || on_front(s_k))){
+    //                 output_triangle(s_i, s_k, s_j);
+    //                 join(e_ij, s_k , F);
+    //                 if (e_ki in F) glue(e_ik, e_ki , F);
+    //                 if (e_jk in F) glue(e_kj, e_jk, F);
+    //             }
+    //              else{
+    //                 mark_as_boundary(e_ij);
+    //             }
+    //             e_ij = get_active_edge(F);
+    //         }
+    //
+    //         (s_i, s_j, s_k) = find_seed_triangle();
+    //         if ((s_i, s_j, s_k)){
+    //             output_triangle(s_i, s_j, s_k);
+    //             insert_edge(e_ij, F);
+    //             insert_edge(e_jk, F);
+    //             insert_edge(e_ki, F);
+    //         } else {
+    //             return;
+    //         }
+    //     }
+    // }
+    //
+    // EdgeIter get_active_edge(F){
+    //
+    // }
+    //
+    // Point ball_pivot(Edge e_ij){
+    //     // return s_k
+    // }
+    //
+    // Void join(e_ij, s_k , F){
+    //
+    // }
+    //
+    // Void glue(e, s , F){
+    //
+    // }
 
     void BezierPatch::preprocess() {
         // TODO Part 1.
         // TODO If you use the matrix form for Bezier patch evaluation, you will need to
-        // TODO compute your matrices based on the 16 control points here. 
+        // TODO compute your matrices based on the 16 control points here.
         // TODO You will also need to define your matrices
         // TODO as member variables in the "BezierPatch" class.
         // TODO If you use De Casteljau's recursive algorithm, you will not need to do anything here.
@@ -79,12 +153,12 @@ namespace CGL {
             HalfedgeCIter h_twin = h->twin();
             Vector3D p1 = h_twin->vertex()->position;
             Vector3D edge1 = p0-p1;
-            
-            h = h_twin->next(); 
+
+            h = h_twin->next();
             Vector3D p2 = h->twin()->vertex()->position;
             Vector3D edge2 = p2-p0;
-   
-            n = n+cross(edge1,edge2); 
+
+            n = n+cross(edge1,edge2);
           } while(h != halfedge());
         return n.unit();
     }
@@ -127,32 +201,32 @@ namespace CGL {
         e4->halfedge() = he4;
         e5->halfedge() = he5;
 
-        he0->next() = he2; 
+        he0->next() = he2;
         he0->vertex() = a;
         he0->edge() = e1;
         he0->face() = f0;
 
-        he1->next() = he3; 
+        he1->next() = he3;
         he1->vertex() = b;
         he1->edge() = e2;
         he1->face() = f1;
 
-        he2->next() = he4; 
+        he2->next() = he4;
         he2->vertex() = d;
         he2->edge() = e3;
         he2->face() = f0;
 
-        he3->next() = he5; 
+        he3->next() = he5;
         he3->vertex() = d;
         he3->edge() = e1;
         he3->face() = f1;
 
-        he4->next() = he0; 
+        he4->next() = he0;
         he4->vertex() = c;
         he4->edge() = e4;
         he4->face() = f0;
 
-        he5->next() = he1; 
+        he5->next() = he1;
         he5->vertex() = a;
         he5->edge() = e5;
         he5->face() = f1;
@@ -190,7 +264,7 @@ namespace CGL {
         VertexIter e = newVertex();
         e->position = epos;
 
-        // new elements 
+        // new elements
         FaceIter f2 = newFace();
         FaceIter f3 = newFace();
         EdgeIter e6 = newEdge();
@@ -224,32 +298,32 @@ namespace CGL {
         d->halfedge() = he2;
         e->halfedge() = he6;
 
-        he0->next() = he8; 
+        he0->next() = he8;
         he0->vertex() = c;
         he0->edge() = e1;
         he0->face() = f0;
 
-        he1->next() = he9; 
+        he1->next() = he9;
         he1->vertex() = b;
         he1->edge() = e2;
         he1->face() = f3;
 
-        he2->next() = he0; 
+        he2->next() = he0;
         he2->vertex() = d;
         he2->edge() = e3;
         he2->face() = f0;
 
-        he3->next() = he4; 
+        he3->next() = he4;
         he3->vertex() = e;
         he3->edge() = e1;
         he3->face() = f1;
 
-        he4->next() = he10; 
+        he4->next() = he10;
         he4->vertex() = c;
         he4->edge() = e4;
         he4->face() = f1;
 
-        he5->next() = he7; 
+        he5->next() = he7;
         he5->vertex() = a;
         he5->edge() = e5;
         he5->face() = f2;
@@ -555,7 +629,7 @@ namespace CGL {
                     VertexIter move = h_twin->vertex(); // vertex is 'source' of the half edge.
                                                   // so h->vertex() is v,
                                                   // whereas h_twin->vertex() is the neighbor vertex.
-                    neighbor_position_sum += move->position; 
+                    neighbor_position_sum += move->position;
                     n+= 1;
                     h = h_twin->next();               // move to the next outgoing halfedge of the vertex.
                 } while(h != move->halfedge());        // keep going until we're back at the beginning
@@ -634,7 +708,7 @@ namespace CGL {
 
           // ...we still have a valid reference to the next edge.
           ef = nextEdgef;
-        }  
+        }
 
 
         // TODO Finally, copy the new vertex positions into final Vertex::position.
@@ -648,5 +722,50 @@ namespace CGL {
 
     // TODO Part 6.
     // TODO There's also some code you'll need to complete in "Shader/frag" file.
+
+    Polymesh BPA_hardcode(std::vector<Vector3D>& vertices) {
+      cout << "BPA yo, voyteces: " << vertices.size() << endl;
+
+
+      // Build the HalfedgeMesh based on what we got
+      Polymesh pm;
+      PolyList polygons; // a std::vector of Polygon structs
+      std::vector<Vector3D> hc_vertices;
+
+
+      // Let's hard code to test!!
+      hc_vertices.push_back(Vector3D(1.0, 0.0, 0.0));
+      hc_vertices.push_back(Vector3D(0.0, 1.0, 0.0));
+      hc_vertices.push_back(Vector3D(0.0, 0.0, 1.0));
+      hc_vertices.push_back(Vector3D(-1.0, 0.0, 0.0));
+      hc_vertices.push_back(Vector3D(0.0, -1.0, 0.0));
+
+      Polygon polygon1;
+      polygon1.vertex_indices.push_back(0);
+      polygon1.vertex_indices.push_back(1);
+      polygon1.vertex_indices.push_back(2);
+
+      Polygon polygon2;
+      polygon2.vertex_indices.push_back(1);
+      polygon2.vertex_indices.push_back(3);
+      polygon2.vertex_indices.push_back(2);
+
+      Polygon polygon3;
+      polygon3.vertex_indices.push_back(3);
+      polygon3.vertex_indices.push_back(4);
+      polygon3.vertex_indices.push_back(2);
+
+      Polygon polygon4;
+      polygon4.vertex_indices.push_back(4);
+      polygon4.vertex_indices.push_back(0);
+      polygon4.vertex_indices.push_back(2);
+
+      pm.vertices = hc_vertices;
+      pm.polygons.push_back(polygon1);
+      pm.polygons.push_back(polygon2);
+      pm.polygons.push_back(polygon3);
+      pm.polygons.push_back(polygon4);
+      return pm;
+    }
 
 }

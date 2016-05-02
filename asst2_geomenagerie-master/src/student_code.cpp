@@ -39,8 +39,8 @@ namespace CGL {
     //   my_loop = this;
     // }
 
-    BPAEdge::BPAEdge( Index i, Index j, BPAEdge& prev_edge, BPAEdge& next_edge,
-             BPALoop& my_loop )
+    BPAEdge::BPAEdge( Index i, Index j, BPAEdge *prev_edge, BPAEdge *next_edge,
+             BPALoop *my_loop )
              : i(i), j(j), prev_edge(prev_edge), next_edge(next_edge), my_loop(my_loop)
     {
     }
@@ -55,17 +55,16 @@ namespace CGL {
     /**
      * Documentation goes here
      */
-    void BPAEdge::glue(BPAEdge other_edge, BPAFront front) {
+    void BPAEdge::glue(BPAEdge *other_edge, BPAFront *front) {
       //TODO
     }
 
     /**
      * Documentation goes here
      */
-    Vector3D BPAEdge::ball_pivot(double rho) {
+    bool BPAEdge::ball_pivot(double rho, Vector3D *k) {
       //TODO
-      Vector3D new_vertex;
-      return new_vertex;
+      return false;
     }
 
     /**
@@ -75,30 +74,29 @@ namespace CGL {
       //TODO
     }
 
-    BPALoop::BPALoop( BPAEdge& start_edge, BPAFront& my_front )
+    BPALoop::BPALoop( BPAEdge *start_edge, BPAFront *my_front )
       : start_edge(start_edge), my_front(my_front)
     {
     }
 
-    //FIXME: needs to initalize polymesh
-    // BPAFront::BPAFront( std::vector<Vector3D> vertices , double rho )
-    //   : vertices(vertices), rho(rho)
-    // {
-    // }
+    BPAFront::BPAFront( std::vector<Vector3D> vertices , double rho )
+      : vertices(vertices), rho(rho) {
+        pm = nullptr;
+    }
 
     /**
      * Pulls any active edge from the front.
      */
-     //FIXME: need to actually initialize edge
-    // BPAEdge& BPAFront::get_active_edge(void) {
-    //   BPAEdge& edge();
-    //   return edge;
-    // }
+    //  FIXME: need to actually initialize edge
+    BPAEdge *BPAFront::get_active_edge(void) {
+      BPAEdge *edge;
+      return edge;
+    }
 
     /**
      * Add an edge as a new loop in the front. Don't forget to update stuff.
      */
-    void BPAFront::insert_edge(BPAEdge& edge) {
+    void BPAFront::insert_edge(BPAEdge *edge) {
       //TODO
     }
 
@@ -521,8 +519,8 @@ namespace CGL {
         deleteHalfedge(h15);
         // deleteHalfedge(h18);
         // deleteHalfedge(h1);
-        
-        
+
+
         return v1;
         // return VertexIter();
     }
@@ -583,7 +581,7 @@ namespace CGL {
             EdgeRecord myRecord(e);
             queue.insert(myRecord);
         }
-        
+
         Size Start = mesh.nFaces();
         // while(mesh.nFaces() >= 10) {
             cout << Start << endl;
@@ -594,7 +592,7 @@ namespace CGL {
             // Compute the new quadric by summing the quadrics at its two endpoints.
             VertexIter v1 = bestEdge.edge->halfedge()->vertex();
             VertexIter v2 = bestEdge.edge->halfedge()->twin()->vertex();
-            Matrix4x4 K = v1->quadric+v2->quadric; 
+            Matrix4x4 K = v1->quadric+v2->quadric;
             VertexIter verts[] = {v1,v2};
             // Remove any edge touching either of its endpoints from the queue.
             for (VertexIter vr: verts) {

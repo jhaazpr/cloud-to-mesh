@@ -30,16 +30,16 @@ namespace CGL {
     class BPAEdge {
     public:
       BPAEdge();
-      BPAEdge( Index i, Index j, BPAEdge& prev_edge, BPAEdge& next_edge,
-               BPALoop& my_loop );
+      BPAEdge( Index i, Index j, BPAEdge *prev_edge, BPAEdge *next_edge,
+               BPALoop *my_loop );
 
       // Either ACTIVE or BOUNDARY (not active)
       bool is_active;
       Index i;
       Index j;
-      BPAEdge& prev_edge;
-      BPAEdge& next_edge;
-      BPALoop& my_loop;
+      BPAEdge* prev_edge;
+      BPAEdge* next_edge;
+      BPALoop* my_loop;
 
       /**
        * Takes in the index of a vertex and inserts edges ik and kj
@@ -48,17 +48,17 @@ namespace CGL {
       void join(Index k);
 
       /**
-       * If other_edge utilizes the same points, as this edge does, 
-       * resolve the conflict by removing one of the edges. 
+       * If other_edge utilizes the same points, as this edge does,
+       * resolve the conflict by removing one of the edges.
        */
-      void glue(BPAEdge other_edge, BPAFront front);
+      void glue(BPAEdge *other_edge, BPAFront *front);
 
       /**
        *  Rotates the ball by considering all points within a 2*rho radius
        *  and checking whether the center lies on the circle gamma. Returns
        *  True if a vertex k was found.
        */
-      bool ball_pivot(double rho, Vector3D& k);
+      bool ball_pivot(double rho, Vector3D *k);
 
       /**
        * Marks an edge as boundary if already fully explored.
@@ -73,10 +73,10 @@ namespace CGL {
        * A BPALoop contains a pointer to the first of the linked list of edges,
        * and to the BPAFront that owns it.
        */
-      BPALoop( BPAEdge& start_edge, BPAFront& my_front );
+      BPALoop( BPAEdge *start_edge, BPAFront *my_front );
 
-      BPAEdge& start_edge;
-      BPAFront& my_front;
+      BPAEdge *start_edge;
+      BPAFront *my_front;
     };
 
     class BPAFront {
@@ -94,7 +94,7 @@ namespace CGL {
        * Keep track of our own lil polymesh that we will of course
        * keep updated the entire time.
        */
-       Polymesh& pm;
+       Polymesh *pm;
 
       /**
        * For each vertex index, and array of booleans to convey the state
@@ -108,12 +108,12 @@ namespace CGL {
       /**
        * Pulls any active edge from the front.
        */
-      BPAEdge& get_active_edge(void);
+      BPAEdge *get_active_edge(void);
 
       /**
        * Add an edge as a new loop in the front. Don't forget to update stuff.
        */
-      void insert_edge(BPAEdge& edge);
+      void insert_edge(BPAEdge *edge);
 
       /**
        * Grab three vertices from a seed triangle that the ball rolls onto.

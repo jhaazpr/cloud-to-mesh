@@ -283,8 +283,8 @@ namespace CGL {
             case 'P':
                 pointCloudMode = !pointCloudMode;
                 break;
-            case 'c':
-            case 'C':
+            case 'b':
+            case 'B':
                 //FIXME: should not have to turn off pointCloude mode
                 pointCloudMode = false;
                 constructMesh();

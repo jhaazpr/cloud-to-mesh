@@ -29,6 +29,7 @@ namespace CGL {
 
     class BPAEdge {
     public:
+      BPAEdge();
       BPAEdge( Index i, Index j, BPAEdge& prev_edge, BPAEdge& next_edge,
                BPALoop& my_loop );
 

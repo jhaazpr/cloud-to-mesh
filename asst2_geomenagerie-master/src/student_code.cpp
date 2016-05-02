@@ -28,61 +28,90 @@ namespace CGL {
       return pm;
     }
 
-    // BPAEdge::BPAEdge( Index i, Index j, BPAEdge& prev_edge, BPAEdge& next_edge,
-    //          BPALoop& my_loop )
-    //          : i(i), j(j), prev_edge(prev_edge), prev
+    //FIXME: issues initializing edges
+    // BPAEdge::BPAEdge( void )
+    //   : i(0), j(0), prev_edge(nullptr), next_edge(nullptr), my_loop(nullptr)
+    // {
+    //   i = 0;
+    //   j = 0;
+    //   prev_edge = this;
+    //   next_edge = this;
+    //   my_loop = this;
+    // }
+
+    BPAEdge::BPAEdge( Index i, Index j, BPAEdge& prev_edge, BPAEdge& next_edge,
+             BPALoop& my_loop )
+             : i(i), j(j), prev_edge(prev_edge), next_edge(next_edge), my_loop(my_loop)
+    {
+    }
+
+    /**
+     * Documentation goes here
+     */
+    void BPAEdge::join(Index index) {
+      //TODO
+    }
+
+    /**
+     * Documentation goes here
+     */
+    void BPAEdge::glue(BPAEdge other_edge, BPAFront front) {
+      //TODO
+    }
+
+    /**
+     * Documentation goes here
+     */
+    Vector3D BPAEdge::ball_pivot(double rho) {
+      //TODO
+      Vector3D new_vertex;
+      return new_vertex;
+    }
+
+    /**
+     * Documentation goes here
+     */
+    void BPAEdge::mark_boundary(void) {
+      //TODO
+    }
+
+    BPALoop::BPALoop( BPAEdge& start_edge, BPAFront& my_front )
+      : start_edge(start_edge), my_front(my_front)
+    {
+    }
+
+    //FIXME: needs to initalize polymesh
+    // BPAFront::BPAFront( std::vector<Vector3D> vertices , double rho )
+    //   : vertices(vertices), rho(rho)
     // {
     // }
 
-    // class Edge {
-    // public:
-    //   Edge();
-    // };
+    /**
+     * Pulls any active edge from the front.
+     */
+     //FIXME: need to actually initialize edge
+    // BPAEdge& BPAFront::get_active_edge(void) {
+    //   BPAEdge& edge();
+    //   return edge;
+    // }
 
-    // void BPA(){
-    //     while (true){
-    //         e_ij = get_active_edge(F);
-    //         while (e_ij){
-    //             s_k = ball_pivot(e_ij);
-    //             if (s_k && (not_used(s_k) || on_front(s_k))){
-    //                 output_triangle(s_i, s_k, s_j);
-    //                 join(e_ij, s_k , F);
-    //                 if (e_ki in F) glue(e_ik, e_ki , F);
-    //                 if (e_jk in F) glue(e_kj, e_jk, F);
-    //             }
-    //              else{
-    //                 mark_as_boundary(e_ij);
-    //             }
-    //             e_ij = get_active_edge(F);
-    //         }
-    //
-    //         (s_i, s_j, s_k) = find_seed_triangle();
-    //         if ((s_i, s_j, s_k)){
-    //             output_triangle(s_i, s_j, s_k);
-    //             insert_edge(e_ij, F);
-    //             insert_edge(e_jk, F);
-    //             insert_edge(e_ki, F);
-    //         } else {
-    //             return;
-    //         }
-    //     }
-    // }
-    //
-    // EdgeIter get_active_edge(F){
-    //
-    // }
-    //
-    // Point ball_pivot(Edge e_ij){
-    //     // return s_k
-    // }
-    //
-    // Void join(e_ij, s_k , F){
-    //
-    // }
-    //
-    // Void glue(e, s , F){
-    //
-    // }
+    /**
+     * Add an edge as a new loop in the front. Don't forget to update stuff.
+     */
+    void BPAFront::insert_edge(BPAEdge& edge) {
+      //TODO
+    }
+
+    /**
+     * Grab three vertices from a seed triangle that the ball rolls onto.
+     */
+    std::vector<Vector3D> BPAFront::find_seed_triangle(void) {
+      //TODO
+      std::vector<Vector3D> triangle;
+      return triangle;
+    }
+
+    ////////////////////////////////////////////////////////////////////
 
     void BezierPatch::preprocess() {
         // TODO Part 1.

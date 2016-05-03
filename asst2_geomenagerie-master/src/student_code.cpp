@@ -29,19 +29,22 @@ namespace CGL {
       BPAFront front(vertices, &pm, 1.0);
       std::vector<Index> triangle_indices;
       bool success = front.find_seed_triangle(&triangle_indices);
+      if (success) {
+        BPAEdge active_edge;
+        success = front.get_active_edge(&active_edge);
+        if (success) {
+          Index next_index;
+          success = active_edge.ball_pivot(front.rho, &next_index);
+          cout << "next index is: " << next_index << endl;
+        }
+      }
       return *(front.pm);
     }
 
-    //FIXME: issues initializing edges
-    // BPAEdge::BPAEdge( void )
-    //   : i(0), j(0), prev_edge(nullptr), next_edge(nullptr), my_loop(nullptr)
-    // {
-    //   i = 0;
-    //   j = 0;
-    //   prev_edge = this;
-    //   next_edge = this;
-    //   my_loop = this;
-    // }
+    BPAEdge::BPAEdge( void )
+      : i(0), j(0), prev_edge(nullptr), next_edge(nullptr), my_loop(nullptr)
+    {
+    }
 
     BPAEdge::BPAEdge( Index i, Index j, Index o, BPAEdge *prev_edge, BPAEdge *next_edge,
              BPALoop *my_loop )
@@ -106,7 +109,7 @@ namespace CGL {
     /**
      * Documentation goes here
      */
-    bool BPAEdge::ball_pivot(double rho, Vector3D *k) {
+    bool BPAEdge::ball_pivot(double rho, Index *k) {
 
         std::vector<Vector3D> vertices = this->my_loop->my_front->vertices;
         Vector3D m = (vertices[i] + vertices[j])/2;
@@ -255,7 +258,6 @@ namespace CGL {
       cout << "hi" << endl;
       for (Index base_index = 0; base_index < vertices.size(); base_index++) {
         if (!vertices_used[base_index]) {
-          cout << "fk" << endl;
           cout << "base " << base_index << endl;
           base_vtx = vertices[base_index];
           std::vector<Index> nearby_vertices

@@ -54,7 +54,7 @@ namespace CGL {
        *  and checking whether the center lies on the circle gamma. Returns
        *  True if a vertex k was found.
        */
-      bool ball_pivot(double rho, Vector3D *k);
+      bool ball_pivot(double rho, Index *k);
 
       /**
        * Marks an edge as boundary if already fully explored.

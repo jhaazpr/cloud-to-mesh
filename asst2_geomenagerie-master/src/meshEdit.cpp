@@ -311,9 +311,9 @@ namespace CGL {
         PointCloud pc = pointCloudNodes.back().point_cloud;
         Polymesh pm;
         cout << "Found " << pc.vertices.size() << " vertices." << endl;
-        BPAFront front = BPAFront(pc.vertices, &pm);
+        BPAFront *front = new BPAFront(pc.vertices, &pm);
         cout << "Built front." << endl;
-        front.BPA(1.0);
+        front->BPA(1.0);
 
         // use init_polymesh(pm)
         cout << ".. built mesh ..." << endl;

@@ -33,6 +33,8 @@ namespace CGL {
         success = this->get_active_edge(active_edge);
         if (success) {
           cout << "Found active edge, now ball pivoting..." << endl;
+          cout << "Front address " << this << endl;
+          cout << "Active edge front address " << active_edge->my_loop << endl;
           cout << active_edge->my_loop->my_front->vertices.size() << endl;
           cout << "yay" << endl;
           Index next_index;
@@ -242,8 +244,8 @@ namespace CGL {
     //  FIXME: need to actually initialize edge
     bool BPAFront::get_active_edge(BPAEdge *e) {
         for (int i = 0; i < this->loops.size(); ++i) {
-            BPAEdge* edge = loops[i].start_edge;
-            while(!edge->is_active && edge != loops[i].start_edge){
+            BPAEdge* edge = loops[i]->start_edge;
+            while(!edge->is_active && edge != loops[i]->start_edge){
                 edge = edge->next_edge;
             }
             if(edge->is_active) {
@@ -266,9 +268,11 @@ namespace CGL {
      * the method inserted the edge.
      */
     BPALoop *BPAFront::insert_edge(BPAEdge *edge) {
-      BPALoop loop(edge, this);
-      edge->my_loop = &loop;
+      BPALoop *loop = new BPALoop(edge, this);
+      cout << "Inserting edge owned by front: " << this << endl;
+      edge->my_loop = loop;
       this->loops.push_back(loop);
+      return loop;
     }
 
     /**
@@ -298,23 +302,18 @@ namespace CGL {
 
       // Make new edges to push to a loop
       // TODO: set fronts
-      BPAEdge *e0 = new BPAEdge(i,j,k, nullptr, nullptr, nullptr);
-      BPAEdge *e1 = new BPAEdge(j,k,i, nullptr, nullptr, nullptr);
-      BPAEdge *e2 = new BPAEdge(k,j,i, nullptr, nullptr, nullptr);
-      e0->prev_edge = e2;
-      e0->next_edge = e1;
-      e1->prev_edge = e0;
-      e1->next_edge = e2;
-      e2->prev_edge = e1;
-      e2->next_edge = e0;
+      BPAEdge *e0, *e1, *e2;
+      e0 = new BPAEdge(i,j,k, e2, e1, nullptr);
+      e1 = new BPAEdge(j,k,i, e0, e2, nullptr);
+      e2 = new BPAEdge(k,j,i, e1, e0, nullptr);
 
       // Insert them into front, method updates the last field.
       insert_edge(e0);
       insert_edge(e1);
       insert_edge(e2);
-      // cout << "hell01" << endl;
-      // cout << e0->my_loop->my_front->vertices.size() << endl;
-      // cout << "yay1" << endl;
+      cout << "hell01" << endl;
+      cout << e0->my_loop->my_front->vertices.size() << endl;
+      cout << "yay1" << endl;
 
 
       //TODO: to stuff with adding edge to front?

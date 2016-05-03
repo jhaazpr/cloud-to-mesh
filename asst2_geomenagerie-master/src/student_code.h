@@ -81,7 +81,7 @@ namespace CGL {
       /**
        * Core fields
        */
-      std::vector<BPALoop> loops;
+      std::vector<BPALoop *> loops;
       std::vector<Vector3D> vertices;
       /**
        * Takes in the index of a vertex and inserts edges ik and kj

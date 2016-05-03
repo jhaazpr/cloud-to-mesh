@@ -128,6 +128,20 @@ namespace CGL {
         }
         return candidates;
     }
+
+    /**
+     * Return all indices candidate points in a 2 rho radius of m, where m is an actual point's index
+     */
+    std::vector<Index> find_nearby_points(double rho, Index cand_idx, std::vector<Vector3D> vertices){
+        std::vector<Index> candidates;
+        for (std::size_t i = 0; i != vertices.size(); ++i) {
+            if (((vertices[i] - vertices[cand_idx]).norm()  < 2 * rho) && (cand_idx != i)){
+                candidates.push_back(i);
+            }
+        }
+        return candidates;
+    }
+
     /**
      * Documentation goes here
      */
@@ -198,6 +212,8 @@ namespace CGL {
     BPAFront::BPAFront( std::vector<Vector3D> vertices , Polymesh* pm)
       : vertices(vertices), pm(pm) {
         pm->vertices = vertices;
+        vertices_on_front = std::vector<bool>(vertices.size(), false);
+        vertices_used = std::vector<bool>(vertices.size(), false);
     }
 
     /**
@@ -236,9 +252,10 @@ namespace CGL {
     bool BPAFront::find_seed_triangle(std::vector<Index> *indices) {
       //Find the vertex indices
       //FIXME: hardcode
-      Index i = 0;
-      Index j = 1;
-      Index k = 2;
+      find_seed_trangle_indices(indices);
+      Index i = (*indices)[0];
+      Index j = (*indices)[1];
+      Index k = (*indices)[2];
 
       // Make polygon
       Polygon polygon;
@@ -270,6 +287,46 @@ namespace CGL {
       //TODO: to stuff with adding edge to front?
 
       return true;
+    }
+
+    bool BPAFront::find_seed_trangle_indices(std::vector<Index> * indices) {
+      Vector3D base_vtx, center, i_vtx, j_vtx;
+      cout << "hi" << endl;
+      for (Index base_index = 0; base_index < vertices.size(); base_index++) {
+        if (!vertices_used[base_index]) {
+          cout << "fk" << endl;
+          cout << "base " << base_index << endl;
+          base_vtx = vertices[base_index];
+          std::vector<Index> nearby_vertices
+            = find_nearby_points(rho, base_index, vertices);
+          cout << "len of near by points: " << nearby_vertices.size() << endl;
+          for (Index i : nearby_vertices) {
+            for (Index j : nearby_vertices) {
+              cout << "try with nearby vertices " << i << " and " << j << endl;
+              i_vtx = nearby_vertices[i];
+              j_vtx = nearby_vertices[j];
+              center = (base_vtx + i_vtx + j_vtx) / 3.0;
+              // Reject when we use the same vertex twice
+              if (i == j) {
+                continue;
+              }
+              // Need to check every vertex to make sure it's not within the triangle
+              for (Vector3D v : vertices) {
+                if ((v - center).norm() < rho) {
+                  continue;
+                }
+              // Otherwise we found one!
+              cout << "found one" << endl;
+              indices->push_back(base_index);
+              indices->push_back(i);
+              indices->push_back(j);
+              return true;
+              }
+            }
+          }
+        }
+      }
+      return false;
     }
 
     ////////////////////////////////////////////////////////////////////

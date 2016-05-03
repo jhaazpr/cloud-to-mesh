@@ -39,17 +39,31 @@ namespace CGL {
     //   my_loop = this;
     // }
 
-    BPAEdge::BPAEdge( Index i, Index j, BPAEdge *prev_edge, BPAEdge *next_edge,
+    BPAEdge::BPAEdge( Index i, Index j, Index o, BPAEdge *prev_edge, BPAEdge *next_edge,
              BPALoop *my_loop )
-             : i(i), j(j), prev_edge(prev_edge), next_edge(next_edge), my_loop(my_loop)
+             : i(i), j(j), o(o), prev_edge(prev_edge), next_edge(next_edge), my_loop(my_loop)
     {
     }
 
     /**
      * Documentation goes here
      */
-    void BPAEdge::join(Index index) {
-      //TODO
+    void BPAFront::join(BPAEdge* e_ji, Index k) {
+        Vector3D v_k = this->vertices[k];
+        BPAEdge* e_ik;
+        BPAEdge* e_kj;
+
+        // insert edges
+        *e_ik = BPAEdge(e_ji->i, k, e_ji->j, e_ji->prev_edge, e_kj, e_ji->my_loop);
+        *e_kj = BPAEdge(k, e_ji->j, e_ji->i, e_ik, e_ji->next_edge, e_ji->my_loop);
+        
+        // remove edge ji
+        e_ji->prev_edge->next_edge = e_ik;
+        e_ji->next_edge->prev_edge = e_kj;
+        // cleanup ji?
+
+        // add vertex to the front
+        this->vertices_on_front[k] = true;
     }
 
     /**
@@ -60,18 +74,77 @@ namespace CGL {
     }
 
     /**
+     * Return all indices candidate points in a 2 rho radius of m
+     */
+    std::vector<Index> find_candidate_points(double rho, Vector3D m, std::vector<Vector3D> vertices){
+        std::vector<Index> candidates;
+        for (std::size_t i = 0; i != vertices.size(); ++i) {
+            if ((vertices[i] - m).norm()  < 2*rho){
+                candidates.push_back(i);
+            }
+        }
+        return candidates;
+    }
+    /**
      * Documentation goes here
      */
     bool BPAEdge::ball_pivot(double rho, Vector3D *k) {
-      //TODO
-      return false;
+        
+        std::vector<Vector3D> vertices = this->my_loop->my_front->vertices;
+        Vector3D m = (vertices[i] + vertices[j])/2;
+        Vector3D i = vertices[this->i];
+        Vector3D j = vertices[this->j];
+        double r = (m - vertices[this->o]).norm();
+
+        // find all candidate points x
+        std::vector<Index> candidates = find_candidate_points(rho, m, vertices);
+        std::vector<Index> center_indices;
+        std::vector<Vector3D> centers;
+
+        // calculate all centers of spheres that touch i,j,x
+        for(Index x_i : candidates){ 
+            Vector3D x = vertices[x_i];
+            Vector3D ji = j-i;
+            Vector3D xi = x-i;
+            Vector3D n = cross(ji, xi);
+
+            Vector3D p0 = cross(dot(ji, ji) * xi - dot(xi, xi) * ji, n) / (2 * dot(n, n)) + i;
+            if (rho*rho >= dot(p0-i, p0-i)){
+                double t1 = sqrt((rho*rho - dot(p0-i, p0-i))/ dot(n, n));
+                // Vector3D t2 = -sqrt((rho^2 - dot(p0-i, p0-i))/ dot(n, n));
+                Vector3D c1 = p0 + (n * t1);
+                // Vector3D c2 = p0 + n * t2;
+                if ((c1-m).norm() == r){
+                    center_indices.push_back(x_i);
+                    centers.push_back(c1);
+                }
+            }
+        }
+
+        // checking whether the center lies on the circle gamma
+        Vector3D b = vertices[this->o] - m;
+        Vector3D a;
+        double max_proj = 0;
+        Index first_index;
+        for (std::size_t i = 0; i != centers.size(); ++i) {
+            a = centers[i] - m;
+            if (dot(a,b) > max_proj ){
+                max_proj = dot(a,b);
+                first_index = center_indices[i];
+            }
+        }
+        if (max_proj == 0){
+            return false;
+        }
+        *k = first_index;
+        return true;
     }
 
     /**
      * Documentation goes here
      */
-    void BPAEdge::mark_boundary(void) {
-      //TODO
+    void BPAEdge::mark_not_active(void) {
+      this->is_active = false;
     }
 
     BPALoop::BPALoop( BPAEdge *start_edge, BPAFront *my_front )
@@ -88,9 +161,19 @@ namespace CGL {
      * Pulls any active edge from the front.
      */
     //  FIXME: need to actually initialize edge
-    BPAEdge *BPAFront::get_active_edge(void) {
-      BPAEdge *edge;
-      return edge;
+    bool BPAFront::get_active_edge(BPAEdge * e) {
+        for (int i = 0; i < this->loops.size(); ++i)
+        {
+            BPAEdge* edge = loops[i].start_edge;
+            while(!edge->is_active && edge != loops[i].start_edge){
+                edge = edge->next_edge;
+            }
+            if(edge->is_active){
+                e = edge;
+                return true;
+            }
+        }
+      return false;
     }
 
     /**
@@ -101,7 +184,7 @@ namespace CGL {
     }
 
     /**
-     * Grab three vertices from a seed triangle that the ball rolls onto.
+     * Grab three vertices that form a seed triangle that the ball rolls onto.
      */
     std::vector<Vector3D> BPAFront::find_seed_triangle(void) {
       //TODO

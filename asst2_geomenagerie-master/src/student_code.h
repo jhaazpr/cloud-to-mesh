@@ -30,22 +30,18 @@ namespace CGL {
     class BPAEdge {
     public:
       BPAEdge();
-      BPAEdge( Index i, Index j, BPAEdge *prev_edge, BPAEdge *next_edge,
+      BPAEdge( Index i, Index j, Index o, BPAEdge *prev_edge, BPAEdge *next_edge,
                BPALoop *my_loop );
 
       // Either ACTIVE or BOUNDARY (not active)
       bool is_active;
       Index i;
       Index j;
+      Index o;
       BPAEdge* prev_edge;
       BPAEdge* next_edge;
       BPALoop* my_loop;
 
-      /**
-       * Takes in the index of a vertex and inserts edges ik and kj
-       * by removing the edge ij from the loop the edge belongs too.
-       */
-      void join(Index k);
 
       /**
        * If other_edge utilizes the same points, as this edge does,
@@ -63,7 +59,7 @@ namespace CGL {
       /**
        * Marks an edge as boundary if already fully explored.
        */
-      void mark_boundary(void);
+      void mark_not_active(void);
 
     };
 
@@ -89,7 +85,11 @@ namespace CGL {
       std::vector<BPALoop> loops;
       std::vector<Vector3D> vertices;
       double rho;
-
+      /**
+       * Takes in the index of a vertex and inserts edges ik and kj
+       * by removing the edge ij from the loop the edge belongs too.
+       */
+      void join(BPAEdge* e_ij, Index k);
       /**
        * Keep track of our own lil polymesh that we will of course
        * keep updated the entire time.
@@ -108,7 +108,7 @@ namespace CGL {
       /**
        * Pulls any active edge from the front.
        */
-      BPAEdge *get_active_edge(void);
+      bool get_active_edge(BPAEdge * e);
 
       /**
        * Add an edge as a new loop in the front. Don't forget to update stuff.

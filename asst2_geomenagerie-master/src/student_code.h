@@ -120,6 +120,8 @@ namespace CGL {
        * Grab three vertices from a seed triangle that the ball rolls onto.
        */
       bool find_seed_triangle(std::vector<Index> *indices);
+    private:
+      bool find_seed_trangle_indices(std::vector<Index> * indices);
     };
 
 

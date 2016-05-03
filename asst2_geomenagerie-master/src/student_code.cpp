@@ -21,15 +21,54 @@ namespace CGL {
      * a Polymesh, which then gets refactored into a HalfedgeMesh anyway in the
      * init_polymesh() function in meshEdit.cpp
      */
-    Polymesh BPA(std::vector<Vector3D>& vertices) {
-      cout << "BPA yo, voyteces: " << vertices.size() << endl;
-
-      // Polymesh pm = BPA_hardcode(vertices);
-      Polymesh pm;
-      BPAFront front(vertices, &pm, 1.0);
+    void BPAFront::BPA(double rho) {
+      // cout << "BPA yo, voyteces: " << vertices.size() << endl;
+      // Polymesh pm;
+      // BPAFront front(vertices, &pm, 1.0);
       std::vector<Index> triangle_indices;
-      bool success = front.find_seed_triangle(&triangle_indices);
-      return *(front.pm);
+      // bool success = front.find_seed_triangle(&triangle_indices);
+      // return *(front.pm);
+
+      while (true){
+            BPAEdge * edge;
+            while (get_active_edge(edge)){
+                Index k;
+                bool pivot_success = edge->ball_pivot(rho, k);
+                if (pivot_success && (this->vertices_on_front[k] || !this->vertices_used[k])){
+                    output_triangle(edge->i, edge->j, k);
+                    join(edge, k);
+                    // if (e_ki in F) glue(e_ik, e_ki , F);
+                    // if (e_jk in F) glue(e_kj, e_jk, F);
+                }
+                 else{
+                    edge->mark_not_active();
+                }
+            }
+            std::vector<Index> *triangle_indices;
+            if (find_seed_triangle(triangle_indices)){
+                Index i = (*triangle_indices)[0];
+                Index j = (*triangle_indices)[1];
+                Index k = (*triangle_indices)[2];
+                output_triangle(i,j,k);
+                // should be taken care of find_seed_triangle
+                // insert_edge(e_ij, F);
+                // insert_edge(e_jk, F);
+                // insert_edge(e_ki, F);
+            } else {
+                return;
+            }
+        }
+    }
+
+    void BPAFront::output_triangle(Index i, Index j, Index k){
+         // Make polygon
+        Polygon polygon;
+        std::vector<Index> triangle_indices;
+        triangle_indices.push_back(i);
+        triangle_indices.push_back(j);
+        triangle_indices.push_back(k);
+        polygon.vertex_indices = triangle_indices;
+        this->pm->polygons.push_back(polygon);
     }
 
     //FIXME: issues initializing edges
@@ -92,7 +131,7 @@ namespace CGL {
     /**
      * Documentation goes here
      */
-    bool BPAEdge::ball_pivot(double rho, Vector3D *k) {
+    bool BPAEdge::ball_pivot(double rho, Index k) {
 
         std::vector<Vector3D> vertices = this->my_loop->my_front->vertices;
         Vector3D m = (vertices[i] + vertices[j])/2;
@@ -140,7 +179,7 @@ namespace CGL {
         if (max_proj == 0){
             return false;
         }
-        *k = first_index;
+        k = first_index;
         return true;
     }
 
@@ -156,8 +195,8 @@ namespace CGL {
     {
     }
 
-    BPAFront::BPAFront( std::vector<Vector3D> vertices , Polymesh* pm, double rho )
-      : vertices(vertices), pm(pm), rho(rho) {
+    BPAFront::BPAFront( std::vector<Vector3D> vertices , Polymesh* pm)
+      : vertices(vertices), pm(pm) {
         pm->vertices = vertices;
     }
 

@@ -22,7 +22,6 @@ namespace CGL {
     };
 
     // Mesh Construction
-    Polymesh BPA(std::vector<Vector3D>& vertices);
     class BPAEdge;
     class BPALoop;
     class BPAFront;
@@ -54,7 +53,7 @@ namespace CGL {
        *  and checking whether the center lies on the circle gamma. Returns
        *  True if a vertex k was found.
        */
-      bool ball_pivot(double rho, Vector3D *k);
+      bool ball_pivot(double rho, Index k);
 
       /**
        * Marks an edge as boundary if already fully explored.
@@ -77,8 +76,8 @@ namespace CGL {
 
     class BPAFront {
     public:
-      BPAFront( std::vector<Vector3D> vertices, Polymesh* pm, double rho );
-
+      BPAFront( std::vector<Vector3D> vertices, Polymesh* pm);
+      void BPA(double rho);
       /**
        * Core fields
        */
@@ -90,6 +89,11 @@ namespace CGL {
        * by removing the edge ij from the loop the edge belongs too.
        */
       void join(BPAEdge* e_ij, Index k);
+      
+     /**
+      * Adds the triangle i,j,k to the polymesh 
+      */
+      void output_triangle(Index i, Index j, Index k);
       /**
        * Keep track of our own lil polymesh that we will of course
        * keep updated the entire time.

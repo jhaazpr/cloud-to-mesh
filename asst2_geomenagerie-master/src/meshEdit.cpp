@@ -309,11 +309,13 @@ namespace CGL {
     void MeshEdit::constructMesh() {
         cout << "Constructing Mesh... " << endl;
         PointCloud pc = pointCloudNodes.back().point_cloud;
-        Polymesh pm = BPA(pc.vertices);
+        Polymesh* pm;
+        BPAFront front = BPAFront(pc.vertices, pm);
+        front.BPA(1.0);
 
         // use init_polymesh(pm)
         cout << ".. built mesh ..." << endl;
-        init_polymesh(pm);
+        init_polymesh(*pm);
         render();
     }
 

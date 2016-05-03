@@ -21,35 +21,84 @@ namespace CGL {
      * a Polymesh, which then gets refactored into a HalfedgeMesh anyway in the
      * init_polymesh() function in meshEdit.cpp
      */
-    Polymesh BPA(std::vector<Vector3D>& vertices) {
-      cout << "BPA yo, voyteces: " << vertices.size() << endl;
-
-      // Polymesh pm = BPA_hardcode(vertices);
-      Polymesh pm;
-      BPAFront front(vertices, &pm, 1.0);
+    void BPAFront::BPA(double rho) {
+      // cout << "BPA yo, voyteces: " << vertices.size() << endl;
+      // Polymesh pm;
+      // BPAFront front(vertices, &pm, 1.0);
       std::vector<Index> triangle_indices;
-      bool success = front.find_seed_triangle(&triangle_indices);
+      cout << "Finding seed triangle..." << endl;
+      bool success = this->find_seed_triangle(&triangle_indices, rho);
       if (success) {
-        BPAEdge active_edge;
-        success = front.get_active_edge(&active_edge);
+        BPAEdge *active_edge;
+        success = this->get_active_edge(active_edge);
         if (success) {
+          cout << "Found active edge, now ball pivoting..." << endl;
+          cout << active_edge->my_loop->my_front->vertices.size() << endl;
+          cout << "yay" << endl;
           Index next_index;
-          success = active_edge.ball_pivot(front.rho, &next_index);
+          success = active_edge->ball_pivot(rho, &next_index);
           cout << "next index is: " << next_index << endl;
+        } else {
+          cout << "Did not pivot ball" << endl;
         }
+      } else {
+        cout << "Did not find seed triangle" << endl;
       }
-      return *(front.pm);
+
+    // TODO: uncomment when we r ready
+    //   while (true){
+    //         BPAEdge * edge;
+    //         while (get_active_edge(edge)){
+    //             Index k;
+    //             bool pivot_success = edge->ball_pivot(rho, k);
+    //             if (pivot_success && (this->vertices_on_front[k] || !this->vertices_used[k])){
+    //                 output_triangle(edge->i, edge->j, k);
+    //                 join(edge, k);
+    //                 // if (e_ki in F) glue(e_ik, e_ki , F);
+    //                 // if (e_jk in F) glue(e_kj, e_jk, F);
+    //             }
+    //              else{
+    //                 edge->mark_not_active();
+    //             }
+    //         }
+    //         std::vector<Index> *triangle_indices;
+    //         if (find_seed_triangle(triangle_indices)){
+    //             Index i = (*triangle_indices)[0];
+    //             Index j = (*triangle_indices)[1];
+    //             Index k = (*triangle_indices)[2];
+    //             output_triangle(i,j,k);
+    //             // should be taken care of find_seed_triangle
+    //             // insert_edge(e_ij, F);
+    //             // insert_edge(e_jk, F);
+    //             // insert_edge(e_ki, F);
+    //         } else {
+    //             return;
+    //         }
+    //     }
+    }
+
+    void BPAFront::output_triangle(Index i, Index j, Index k){
+         // Make polygon
+        Polygon polygon;
+        std::vector<Index> triangle_indices;
+        triangle_indices.push_back(i);
+        triangle_indices.push_back(j);
+        triangle_indices.push_back(k);
+        polygon.vertex_indices = triangle_indices;
+        this->pm->polygons.push_back(polygon);
     }
 
     BPAEdge::BPAEdge( void )
       : i(0), j(0), prev_edge(nullptr), next_edge(nullptr), my_loop(nullptr)
     {
+      is_active = true;
     }
 
     BPAEdge::BPAEdge( Index i, Index j, Index o, BPAEdge *prev_edge, BPAEdge *next_edge,
              BPALoop *my_loop )
              : i(i), j(j), o(o), prev_edge(prev_edge), next_edge(next_edge), my_loop(my_loop)
     {
+      is_active = true;
     }
 
     /**
@@ -98,7 +147,9 @@ namespace CGL {
      */
     std::vector<Index> find_nearby_points(double rho, Index cand_idx, std::vector<Vector3D> vertices){
         std::vector<Index> candidates;
+        cout << "FNP rho: " << rho << endl;
         for (std::size_t i = 0; i != vertices.size(); ++i) {
+          cout << (vertices[i] - vertices[cand_idx]).norm() << endl;
             if (((vertices[i] - vertices[cand_idx]).norm()  < 2 * rho) && (cand_idx != i)){
                 candidates.push_back(i);
             }
@@ -110,8 +161,12 @@ namespace CGL {
      * Documentation goes here
      */
     bool BPAEdge::ball_pivot(double rho, Index *k) {
-
+        cout << "BP: get edge's loop's front's vertices" << endl;
+        // cout << this->my_loop->my_front->vertices.size() << endl;
+        // cout << "yay" << endl;
         std::vector<Vector3D> vertices = this->my_loop->my_front->vertices;
+
+        cout << "success" << endl;
         Vector3D m = (vertices[i] + vertices[j])/2;
         Vector3D i = vertices[this->i];
         Vector3D j = vertices[this->j];
@@ -119,6 +174,7 @@ namespace CGL {
 
         // find all candidate points x
         std::vector<Index> candidates = find_candidate_points(rho, m, vertices);
+        cout << "Ball pivot found candidate #: " << candidates.size() << endl;
         std::vector<Index> center_indices;
         std::vector<Vector3D> centers;
 
@@ -173,8 +229,8 @@ namespace CGL {
     {
     }
 
-    BPAFront::BPAFront( std::vector<Vector3D> vertices , Polymesh* pm, double rho )
-      : vertices(vertices), pm(pm), rho(rho) {
+    BPAFront::BPAFront( std::vector<Vector3D> vertices , Polymesh* pm)
+      : vertices(vertices), pm(pm) {
         pm->vertices = vertices;
         vertices_on_front = std::vector<bool>(vertices.size(), false);
         vertices_used = std::vector<bool>(vertices.size(), false);
@@ -184,15 +240,20 @@ namespace CGL {
      * Pulls any active edge from the front.
      */
     //  FIXME: need to actually initialize edge
-    bool BPAFront::get_active_edge(BPAEdge * e) {
-        for (int i = 0; i < this->loops.size(); ++i)
-        {
+    bool BPAFront::get_active_edge(BPAEdge *e) {
+        for (int i = 0; i < this->loops.size(); ++i) {
             BPAEdge* edge = loops[i].start_edge;
             while(!edge->is_active && edge != loops[i].start_edge){
                 edge = edge->next_edge;
             }
-            if(edge->is_active){
+            if(edge->is_active) {
                 e = edge;
+                cout << "hello" << endl;
+                cout << e->my_loop->my_front->vertices.size() << endl;
+                cout << "yay" << endl;
+                // cout << "found active edge, testing its integrity" << endl;
+                // e->my_loop->my_front->vertices;
+                // cout << "success" << endl;
                 return true;
             }
         }
@@ -205,7 +266,9 @@ namespace CGL {
      * the method inserted the edge.
      */
     BPALoop *BPAFront::insert_edge(BPAEdge *edge) {
-      //TODO
+      BPALoop loop(edge, this);
+      edge->my_loop = &loop;
+      this->loops.push_back(loop);
     }
 
     /**
@@ -213,10 +276,12 @@ namespace CGL {
      * Takes in a pointer to a vector of indices, whcich will be set on success
      * Return boolean on whether or not the function succeeded.
      */
-    bool BPAFront::find_seed_triangle(std::vector<Index> *indices) {
+    bool BPAFront::find_seed_triangle(std::vector<Index> *indices, double rho) {
       //Find the vertex indices
       //FIXME: hardcode
-      find_seed_trangle_indices(indices);
+      if (!(find_seed_trangle_indices(indices, rho))) {
+        return false;
+      }
       Index i = (*indices)[0];
       Index j = (*indices)[1];
       Index k = (*indices)[2];
@@ -247,21 +312,24 @@ namespace CGL {
       insert_edge(e0);
       insert_edge(e1);
       insert_edge(e2);
+      // cout << "hell01" << endl;
+      // cout << e0->my_loop->my_front->vertices.size() << endl;
+      // cout << "yay1" << endl;
+
 
       //TODO: to stuff with adding edge to front?
 
       return true;
     }
 
-    bool BPAFront::find_seed_trangle_indices(std::vector<Index> * indices) {
+    bool BPAFront::find_seed_trangle_indices(std::vector<Index> * indices, double rho) {
       Vector3D base_vtx, center, i_vtx, j_vtx;
-      cout << "hi" << endl;
       for (Index base_index = 0; base_index < vertices.size(); base_index++) {
         if (!vertices_used[base_index]) {
           cout << "base " << base_index << endl;
           base_vtx = vertices[base_index];
           std::vector<Index> nearby_vertices
-            = find_nearby_points(rho, base_index, vertices);
+            = find_nearby_points(2 * rho, base_index, vertices);
           cout << "len of near by points: " << nearby_vertices.size() << endl;
           for (Index i : nearby_vertices) {
             for (Index j : nearby_vertices) {

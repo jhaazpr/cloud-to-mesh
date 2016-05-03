@@ -22,7 +22,6 @@ namespace CGL {
     };
 
     // Mesh Construction
-    Polymesh BPA(std::vector<Vector3D>& vertices);
     class BPAEdge;
     class BPALoop;
     class BPAFront;
@@ -77,19 +76,23 @@ namespace CGL {
 
     class BPAFront {
     public:
-      BPAFront( std::vector<Vector3D> vertices, Polymesh* pm, double rho );
-
+      BPAFront( std::vector<Vector3D> vertices, Polymesh* pm);
+      void BPA(double rho);
       /**
        * Core fields
        */
       std::vector<BPALoop> loops;
       std::vector<Vector3D> vertices;
-      double rho;
       /**
        * Takes in the index of a vertex and inserts edges ik and kj
        * by removing the edge ij from the loop the edge belongs too.
        */
       void join(BPAEdge* e_ij, Index k);
+
+     /**
+      * Adds the triangle i,j,k to the polymesh
+      */
+      void output_triangle(Index i, Index j, Index k);
       /**
        * Keep track of our own lil polymesh that we will of course
        * keep updated the entire time.
@@ -119,9 +122,9 @@ namespace CGL {
       /**
        * Grab three vertices from a seed triangle that the ball rolls onto.
        */
-      bool find_seed_triangle(std::vector<Index> *indices);
+      bool find_seed_triangle(std::vector<Index> *indices, double rho);
     private:
-      bool find_seed_trangle_indices(std::vector<Index> * indices);
+      bool find_seed_trangle_indices(std::vector<Index> * indices, double rho);
     };
 
 

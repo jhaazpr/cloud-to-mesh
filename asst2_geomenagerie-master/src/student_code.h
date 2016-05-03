@@ -77,7 +77,7 @@ namespace CGL {
 
     class BPAFront {
     public:
-      BPAFront( std::vector<Vector3D> vertices , double rho );
+      BPAFront( std::vector<Vector3D> vertices, Polymesh* pm, double rho );
 
       /**
        * Core fields
@@ -112,13 +112,14 @@ namespace CGL {
 
       /**
        * Add an edge as a new loop in the front. Don't forget to update stuff.
+       * Returns the loop in which the method inserted the edge.
        */
-      void insert_edge(BPAEdge *edge);
+      BPALoop *insert_edge(BPAEdge *edge);
 
       /**
        * Grab three vertices from a seed triangle that the ball rolls onto.
        */
-      std::vector<Vector3D> find_seed_triangle(void);
+      bool find_seed_triangle(std::vector<Index> *indices);
     };
 
 

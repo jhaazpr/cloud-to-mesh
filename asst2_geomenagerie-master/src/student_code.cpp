@@ -24,8 +24,12 @@ namespace CGL {
     Polymesh BPA(std::vector<Vector3D>& vertices) {
       cout << "BPA yo, voyteces: " << vertices.size() << endl;
 
-      Polymesh pm = BPA_hardcode(vertices);
-      return pm;
+      // Polymesh pm = BPA_hardcode(vertices);
+      Polymesh pm;
+      BPAFront front(vertices, &pm, 1.0);
+      std::vector<Index> triangle_indices;
+      bool success = front.find_seed_triangle(&triangle_indices);
+      return *(front.pm);
     }
 
     //FIXME: issues initializing edges
@@ -56,7 +60,7 @@ namespace CGL {
         // insert edges
         *e_ik = BPAEdge(e_ji->i, k, e_ji->j, e_ji->prev_edge, e_kj, e_ji->my_loop);
         *e_kj = BPAEdge(k, e_ji->j, e_ji->i, e_ik, e_ji->next_edge, e_ji->my_loop);
-        
+
         // remove edge ji
         e_ji->prev_edge->next_edge = e_ik;
         e_ji->next_edge->prev_edge = e_kj;
@@ -79,7 +83,7 @@ namespace CGL {
     std::vector<Index> find_candidate_points(double rho, Vector3D m, std::vector<Vector3D> vertices){
         std::vector<Index> candidates;
         for (std::size_t i = 0; i != vertices.size(); ++i) {
-            if ((vertices[i] - m).norm()  < 2*rho){
+            if ((vertices[i] - m).norm()  < 2 * rho){
                 candidates.push_back(i);
             }
         }
@@ -89,7 +93,7 @@ namespace CGL {
      * Documentation goes here
      */
     bool BPAEdge::ball_pivot(double rho, Vector3D *k) {
-        
+
         std::vector<Vector3D> vertices = this->my_loop->my_front->vertices;
         Vector3D m = (vertices[i] + vertices[j])/2;
         Vector3D i = vertices[this->i];
@@ -102,7 +106,7 @@ namespace CGL {
         std::vector<Vector3D> centers;
 
         // calculate all centers of spheres that touch i,j,x
-        for(Index x_i : candidates){ 
+        for(Index x_i : candidates){
             Vector3D x = vertices[x_i];
             Vector3D ji = j-i;
             Vector3D xi = x-i;
@@ -152,9 +156,9 @@ namespace CGL {
     {
     }
 
-    BPAFront::BPAFront( std::vector<Vector3D> vertices , double rho )
-      : vertices(vertices), rho(rho) {
-        pm = nullptr;
+    BPAFront::BPAFront( std::vector<Vector3D> vertices , Polymesh* pm, double rho )
+      : vertices(vertices), pm(pm), rho(rho) {
+        pm->vertices = vertices;
     }
 
     /**
@@ -178,18 +182,55 @@ namespace CGL {
 
     /**
      * Add an edge as a new loop in the front. Don't forget to update stuff.
+     * Also updates the edge's MY_LOOP function to point to the loop in whcih
+     * the method inserted the edge.
      */
-    void BPAFront::insert_edge(BPAEdge *edge) {
+    BPALoop *BPAFront::insert_edge(BPAEdge *edge) {
       //TODO
     }
 
     /**
      * Grab three vertices that form a seed triangle that the ball rolls onto.
+     * Takes in a pointer to a vector of indices, whcich will be set on success
+     * Return boolean on whether or not the function succeeded.
      */
-    std::vector<Vector3D> BPAFront::find_seed_triangle(void) {
-      //TODO
-      std::vector<Vector3D> triangle;
-      return triangle;
+    bool BPAFront::find_seed_triangle(std::vector<Index> *indices) {
+      //Find the vertex indices
+      //FIXME: hardcode
+      Index i = 0;
+      Index j = 1;
+      Index k = 2;
+
+      // Make polygon
+      Polygon polygon;
+      std::vector<Index> triangle_indices;
+      triangle_indices.push_back(i);
+      triangle_indices.push_back(j);
+      triangle_indices.push_back(k);
+      polygon.vertex_indices = triangle_indices;
+      this->pm->polygons.push_back(polygon);
+      *indices = triangle_indices;
+
+      // Make new edges to push to a loop
+      // TODO: set fronts
+      BPAEdge *e0 = new BPAEdge(i,j,k, nullptr, nullptr, nullptr);
+      BPAEdge *e1 = new BPAEdge(j,k,i, nullptr, nullptr, nullptr);
+      BPAEdge *e2 = new BPAEdge(k,j,i, nullptr, nullptr, nullptr);
+      e0->prev_edge = e2;
+      e0->next_edge = e1;
+      e1->prev_edge = e0;
+      e1->next_edge = e2;
+      e2->prev_edge = e1;
+      e2->next_edge = e0;
+
+      // Insert them into front, method updates the last field.
+      insert_edge(e0);
+      insert_edge(e1);
+      insert_edge(e2);
+
+      //TODO: to stuff with adding edge to front?
+
+      return true;
     }
 
     ////////////////////////////////////////////////////////////////////

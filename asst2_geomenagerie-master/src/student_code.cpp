@@ -39,7 +39,12 @@ namespace CGL {
           cout << "yay" << endl;
           Index next_index;
           success = active_edge->ball_pivot(rho, &next_index);
-          cout << "next index is: " << next_index << endl;
+          if (success) {
+            cout << "pivot edge's indices: " << active_edge->i << " ," << active_edge->j << endl;
+            cout << "next index is: " << next_index << endl;
+          } else {
+            cout << "ball pivot failed" << endl;
+          }
         } else {
           cout << "Did not pivot ball" << endl;
         }
@@ -249,7 +254,7 @@ namespace CGL {
                 edge = edge->next_edge;
             }
             if(edge->is_active) {
-                e = edge;
+                *e = *edge;
                 cout << "hello" << endl;
                 cout << e->my_loop->my_front->vertices.size() << endl;
                 cout << "yay" << endl;

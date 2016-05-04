@@ -21,68 +21,350 @@ namespace CGL {
      * a Polymesh, which then gets refactored into a HalfedgeMesh anyway in the
      * init_polymesh() function in meshEdit.cpp
      */
-    Polymesh BPA(std::vector<Vector3D>& vertices) {
-      cout << "BPA yo, voyteces: " << vertices.size() << endl;
+    void BPAFront::BPA(double rho) {
+      // cout << "BPA yo, voyteces: " << vertices.size() << endl;
+      // Polymesh pm;
+      // BPAFront front(vertices, &pm, 1.0);
+      std::vector<Index> triangle_indices;
+      cout << "Finding seed triangle..." << endl;
+      bool success = this->find_seed_triangle(&triangle_indices, rho);
+      if (success) {
+        BPAEdge *active_edge;
+        success = this->get_active_edge(active_edge);
+        if (success) {
+          cout << "Found active edge, now ball pivoting..." << endl;
+          cout << "Front address " << this << endl;
+          cout << "Active edge front address " << active_edge->my_loop << endl;
+          cout << active_edge->my_loop->my_front->vertices.size() << endl;
+          cout << "yay" << endl;
+          Index next_index;
+          success = active_edge->ball_pivot(rho, &next_index);
+          if (success) {
+            cout << "pivot edge's indices: " << active_edge->i << " ," << active_edge->j << endl;
+            cout << "next index is: " << next_index << endl;
+          } else {
+            cout << "ball pivot failed" << endl;
+          }
+        } else {
+          cout << "Did not pivot ball" << endl;
+        }
+      } else {
+        cout << "Did not find seed triangle" << endl;
+      }
 
-      Polymesh pm = BPA_hardcode(vertices);
-      return pm;
-    }
-
-    // BPAEdge::BPAEdge( Index i, Index j, BPAEdge& prev_edge, BPAEdge& next_edge,
-    //          BPALoop& my_loop )
-    //          : i(i), j(j), prev_edge(prev_edge), prev
-    // {
-    // }
-
-    // class Edge {
-    // public:
-    //   Edge();
-    // };
-
-    // void BPA(){
-    //     while (true){
-    //         e_ij = get_active_edge(F);
-    //         while (e_ij){
-    //             s_k = ball_pivot(e_ij);
-    //             if (s_k && (not_used(s_k) || on_front(s_k))){
-    //                 output_triangle(s_i, s_k, s_j);
-    //                 join(e_ij, s_k , F);
-    //                 if (e_ki in F) glue(e_ik, e_ki , F);
-    //                 if (e_jk in F) glue(e_kj, e_jk, F);
+    // TODO: uncomment when we r ready
+    //   while (true){
+    //         BPAEdge * edge;
+    //         while (get_active_edge(edge)){
+    //             Index k;
+    //             bool pivot_success = edge->ball_pivot(rho, k);
+    //             if (pivot_success && (this->vertices_on_front[k] || !this->vertices_used[k])){
+    //                 output_triangle(edge->i, edge->j, k);
+    //                 join(edge, k);
+    //                 // if (e_ki in F) glue(e_ik, e_ki , F);
+    //                 // if (e_jk in F) glue(e_kj, e_jk, F);
     //             }
     //              else{
-    //                 mark_as_boundary(e_ij);
+    //                 edge->mark_not_active();
     //             }
-    //             e_ij = get_active_edge(F);
     //         }
-    //
-    //         (s_i, s_j, s_k) = find_seed_triangle();
-    //         if ((s_i, s_j, s_k)){
-    //             output_triangle(s_i, s_j, s_k);
-    //             insert_edge(e_ij, F);
-    //             insert_edge(e_jk, F);
-    //             insert_edge(e_ki, F);
+    //         std::vector<Index> *triangle_indices;
+    //         if (find_seed_triangle(triangle_indices)){
+    //             Index i = (*triangle_indices)[0];
+    //             Index j = (*triangle_indices)[1];
+    //             Index k = (*triangle_indices)[2];
+    //             output_triangle(i,j,k);
+    //             // should be taken care of find_seed_triangle
+    //             // insert_edge(e_ij, F);
+    //             // insert_edge(e_jk, F);
+    //             // insert_edge(e_ki, F);
     //         } else {
     //             return;
     //         }
     //     }
-    // }
-    //
-    // EdgeIter get_active_edge(F){
-    //
-    // }
-    //
-    // Point ball_pivot(Edge e_ij){
-    //     // return s_k
-    // }
-    //
-    // Void join(e_ij, s_k , F){
-    //
-    // }
-    //
-    // Void glue(e, s , F){
-    //
-    // }
+    }
+
+    void BPAFront::output_triangle(Index i, Index j, Index k){
+         // Make polygon
+        Polygon polygon;
+        std::vector<Index> triangle_indices;
+        triangle_indices.push_back(i);
+        triangle_indices.push_back(j);
+        triangle_indices.push_back(k);
+        polygon.vertex_indices = triangle_indices;
+        this->pm->polygons.push_back(polygon);
+    }
+
+    BPAEdge::BPAEdge( void )
+      : i(0), j(0), prev_edge(nullptr), next_edge(nullptr), my_loop(nullptr)
+    {
+      is_active = true;
+    }
+
+    BPAEdge::BPAEdge( Index i, Index j, Index o, BPAEdge *prev_edge, BPAEdge *next_edge,
+             BPALoop *my_loop )
+             : i(i), j(j), o(o), prev_edge(prev_edge), next_edge(next_edge), my_loop(my_loop)
+    {
+      is_active = true;
+    }
+
+    /**
+     * Documentation goes here
+     */
+    void BPAFront::join(BPAEdge* e_ji, Index k) {
+        Vector3D v_k = this->vertices[k];
+        BPAEdge* e_ik;
+        BPAEdge* e_kj;
+
+        // insert edges
+        *e_ik = BPAEdge(e_ji->i, k, e_ji->j, e_ji->prev_edge, e_kj, e_ji->my_loop);
+        *e_kj = BPAEdge(k, e_ji->j, e_ji->i, e_ik, e_ji->next_edge, e_ji->my_loop);
+
+        // remove edge ji
+        e_ji->prev_edge->next_edge = e_ik;
+        e_ji->next_edge->prev_edge = e_kj;
+        // cleanup ji?
+
+        // add vertex to the front
+        this->vertices_on_front[k] = true;
+    }
+
+    /**
+     * Documentation goes here
+     */
+    void BPAEdge::glue(BPAEdge *other_edge, BPAFront *front) {
+      //TODO
+    }
+
+    /**
+     * Return all indices candidate points in a 2 rho radius of m
+     */
+    std::vector<Index> find_candidate_points(double rho, Vector3D m, std::vector<Vector3D> vertices){
+        std::vector<Index> candidates;
+        for (std::size_t i = 0; i != vertices.size(); ++i) {
+            if ((vertices[i] - m).norm()  < 2 * rho){
+                candidates.push_back(i);
+            }
+        }
+        return candidates;
+    }
+
+    /**
+     * Return all indices candidate points in a 2 rho radius of m, where m is an actual point's index
+     */
+    std::vector<Index> find_nearby_points(double rho, Index cand_idx, std::vector<Vector3D> vertices){
+        std::vector<Index> candidates;
+        cout << "FNP rho: " << rho << endl;
+        for (std::size_t i = 0; i != vertices.size(); ++i) {
+          cout << (vertices[i] - vertices[cand_idx]).norm() << endl;
+            if (((vertices[i] - vertices[cand_idx]).norm()  < 2 * rho) && (cand_idx != i)){
+                candidates.push_back(i);
+            }
+        }
+        return candidates;
+    }
+
+    /**
+     * Documentation goes here
+     */
+    bool BPAEdge::ball_pivot(double rho, Index *k) {
+        cout << "BP: get edge's loop's front's vertices" << endl;
+        // cout << this->my_loop->my_front->vertices.size() << endl;
+        // cout << "yay" << endl;
+        std::vector<Vector3D> vertices = this->my_loop->my_front->vertices;
+
+        cout << "success" << endl;
+        Vector3D m = (vertices[i] + vertices[j])/2;
+        Vector3D i = vertices[this->i];
+        Vector3D j = vertices[this->j];
+        double r = (m - vertices[this->o]).norm();
+
+        // find all candidate points x
+        std::vector<Index> candidates = find_candidate_points(rho, m, vertices);
+        cout << "Ball pivot found candidate #: " << candidates.size() << endl;
+        std::vector<Index> center_indices;
+        std::vector<Vector3D> centers;
+
+        // calculate all centers of spheres that touch i,j,x
+        for(Index x_i : candidates){
+            Vector3D x = vertices[x_i];
+            Vector3D ji = j-i;
+            Vector3D xi = x-i;
+            Vector3D n = cross(ji, xi);
+
+            Vector3D p0 = cross(dot(ji, ji) * xi - dot(xi, xi) * ji, n) / (2 * dot(n, n)) + i;
+            if (rho*rho >= dot(p0-i, p0-i)){
+                double t1 = sqrt((rho*rho - dot(p0-i, p0-i))/ dot(n, n));
+                // Vector3D t2 = -sqrt((rho^2 - dot(p0-i, p0-i))/ dot(n, n));
+                Vector3D c1 = p0 + (n * t1);
+                // Vector3D c2 = p0 + n * t2;
+                if ((c1-m).norm() == r){
+                    center_indices.push_back(x_i);
+                    centers.push_back(c1);
+                }
+            }
+        }
+
+        // checking whether the center lies on the circle gamma
+        Vector3D b = vertices[this->o] - m;
+        Vector3D a;
+        double max_proj = 0;
+        Index first_index;
+        for (std::size_t i = 0; i != centers.size(); ++i) {
+            a = centers[i] - m;
+            if (dot(a,b) > max_proj ){
+                max_proj = dot(a,b);
+                first_index = center_indices[i];
+            }
+        }
+        if (max_proj == 0){
+            return false;
+        }
+        *k = first_index;
+        return true;
+    }
+
+    /**
+     * Documentation goes here
+     */
+    void BPAEdge::mark_not_active(void) {
+      this->is_active = false;
+    }
+
+    BPALoop::BPALoop( BPAEdge *start_edge, BPAFront *my_front )
+      : start_edge(start_edge), my_front(my_front)
+    {
+    }
+
+    BPAFront::BPAFront( std::vector<Vector3D> vertices , Polymesh* pm)
+      : vertices(vertices), pm(pm) {
+        pm->vertices = vertices;
+        vertices_on_front = std::vector<bool>(vertices.size(), false);
+        vertices_used = std::vector<bool>(vertices.size(), false);
+    }
+
+    /**
+     * Pulls any active edge from the front.
+     */
+    //  FIXME: need to actually initialize edge
+    bool BPAFront::get_active_edge(BPAEdge *e) {
+        for (int i = 0; i < this->loops.size(); ++i) {
+            BPAEdge* edge = loops[i]->start_edge;
+            while(!edge->is_active && edge != loops[i]->start_edge){
+                edge = edge->next_edge;
+            }
+            if(edge->is_active) {
+                *e = *edge;
+                cout << "hello" << endl;
+                cout << e->my_loop->my_front->vertices.size() << endl;
+                cout << "yay" << endl;
+                // cout << "found active edge, testing its integrity" << endl;
+                // e->my_loop->my_front->vertices;
+                // cout << "success" << endl;
+                return true;
+            }
+        }
+      return false;
+    }
+
+    /**
+     * Add an edge as a new loop in the front. Don't forget to update stuff.
+     * Also updates the edge's MY_LOOP function to point to the loop in whcih
+     * the method inserted the edge.
+     */
+    BPALoop *BPAFront::insert_edge(BPAEdge *edge) {
+      BPALoop *loop = new BPALoop(edge, this);
+      cout << "Inserting edge owned by front: " << this << endl;
+      edge->my_loop = loop;
+      this->loops.push_back(loop);
+      return loop;
+    }
+
+    /**
+     * Grab three vertices that form a seed triangle that the ball rolls onto.
+     * Takes in a pointer to a vector of indices, whcich will be set on success
+     * Return boolean on whether or not the function succeeded.
+     */
+    bool BPAFront::find_seed_triangle(std::vector<Index> *indices, double rho) {
+      //Find the vertex indices
+      //FIXME: hardcode
+      if (!(find_seed_trangle_indices(indices, rho))) {
+        return false;
+      }
+      Index i = (*indices)[0];
+      Index j = (*indices)[1];
+      Index k = (*indices)[2];
+
+      // Make polygon
+      Polygon polygon;
+      std::vector<Index> triangle_indices;
+      triangle_indices.push_back(i);
+      triangle_indices.push_back(j);
+      triangle_indices.push_back(k);
+      polygon.vertex_indices = triangle_indices;
+      this->pm->polygons.push_back(polygon);
+      *indices = triangle_indices;
+
+      // Make new edges to push to a loop
+      // TODO: set fronts
+      BPAEdge *e0, *e1, *e2;
+      e0 = new BPAEdge(i,j,k, e2, e1, nullptr);
+      e1 = new BPAEdge(j,k,i, e0, e2, nullptr);
+      e2 = new BPAEdge(k,j,i, e1, e0, nullptr);
+
+      // Insert them into front, method updates the last field.
+      insert_edge(e0);
+      insert_edge(e1);
+      insert_edge(e2);
+      cout << "hell01" << endl;
+      cout << e0->my_loop->my_front->vertices.size() << endl;
+      cout << "yay1" << endl;
+
+
+      //TODO: to stuff with adding edge to front?
+
+      return true;
+    }
+
+    bool BPAFront::find_seed_trangle_indices(std::vector<Index> * indices, double rho) {
+      Vector3D base_vtx, center, i_vtx, j_vtx;
+      for (Index base_index = 0; base_index < vertices.size(); base_index++) {
+        if (!vertices_used[base_index]) {
+          cout << "base " << base_index << endl;
+          base_vtx = vertices[base_index];
+          std::vector<Index> nearby_vertices
+            = find_nearby_points(2 * rho, base_index, vertices);
+          cout << "len of near by points: " << nearby_vertices.size() << endl;
+          for (Index i : nearby_vertices) {
+            for (Index j : nearby_vertices) {
+              cout << "try with nearby vertices " << i << " and " << j << endl;
+              i_vtx = nearby_vertices[i];
+              j_vtx = nearby_vertices[j];
+              center = (base_vtx + i_vtx + j_vtx) / 3.0;
+              // Reject when we use the same vertex twice
+              if (i == j) {
+                continue;
+              }
+              // Need to check every vertex to make sure it's not within the triangle
+              for (Vector3D v : vertices) {
+                if ((v - center).norm() < rho) {
+                  continue;
+                }
+              // Otherwise we found one!
+              cout << "found one" << endl;
+              indices->push_back(base_index);
+              indices->push_back(i);
+              indices->push_back(j);
+              return true;
+              }
+            }
+          }
+        }
+      }
+      return false;
+    }
+
+    ////////////////////////////////////////////////////////////////////
 
     void BezierPatch::preprocess() {
         // TODO Part 1.
@@ -448,7 +730,6 @@ namespace CGL {
         deleteHalfedge(h5);
         deleteHalfedge(h6);
 
-        
         return v1;
         // return VertexIter();
     }
@@ -512,7 +793,7 @@ namespace CGL {
             EdgeRecord myRecord(e);
             queue.insert(myRecord);
         }
-        
+
         Size Start = mesh.nFaces();
         while(mesh.nFaces() > 300) {
             // Get the cheapest edge from the queue.
@@ -522,7 +803,7 @@ namespace CGL {
             // Compute the new quadric by summing the quadrics at its two endpoints.
             VertexIter v1 = bestEdge.edge->halfedge()->vertex();
             VertexIter v2 = bestEdge.edge->halfedge()->twin()->vertex();
-            Matrix4x4 K = v1->quadric+v2->quadric; 
+            Matrix4x4 K = v1->quadric+v2->quadric;
             VertexIter verts[] = {v1,v2};
             // Remove any edge touching either of its endpoints from the queue.
             for (VertexIter vr: verts) {

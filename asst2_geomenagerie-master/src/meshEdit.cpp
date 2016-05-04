@@ -283,8 +283,8 @@ namespace CGL {
             case 'P':
                 pointCloudMode = !pointCloudMode;
                 break;
-            case 'c':
-            case 'C':
+            case 'b':
+            case 'B':
                 //FIXME: should not have to turn off pointCloude mode
                 pointCloudMode = false;
                 constructMesh();
@@ -309,7 +309,11 @@ namespace CGL {
     void MeshEdit::constructMesh() {
         cout << "Constructing Mesh... " << endl;
         PointCloud pc = pointCloudNodes.back().point_cloud;
-        Polymesh pm = BPA(pc.vertices);
+        Polymesh pm;
+        cout << "Found " << pc.vertices.size() << " vertices." << endl;
+        BPAFront *front = new BPAFront(pc.vertices, &pm);
+        cout << "Built front." << endl;
+        front->BPA(1.0);
 
         // use init_polymesh(pm)
         cout << ".. built mesh ..." << endl;

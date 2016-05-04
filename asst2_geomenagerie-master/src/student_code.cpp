@@ -340,159 +340,114 @@ namespace CGL {
 
     VertexIter HalfedgeMesh::collapseEdge(EdgeIter e0){
         if (e0->isBoundary()) {
+            cout << "out" << endl;
             return VertexIter();
         }
-        // HalfedgeIter h1 = e0->halfedge();
-        // HalfedgeIter h2 = h1->next();
-        // HalfedgeIter h3 = h2->next();
-        // HalfedgeIter h4 = h3->twin();
-        // HalfedgeIter h5 = h4->next();
-        // HalfedgeIter h6 = h5->next();
-        // HalfedgeIter h7 = h6->twin();
-        // HalfedgeIter h8 = h7->next();
-        // HalfedgeIter h9 = h8->next();
-        // HalfedgeIter h10 = h9->twin();
-        // HalfedgeIter h11 = h10->next();
-        // HalfedgeIter h12 = h11->next();
-        // HalfedgeIter h13 = h12->twin();
-        // HalfedgeIter h14 = h13->next();
-        // HalfedgeIter h15 = h14->next();
-        // HalfedgeIter h16 = h15->twin();
-        // HalfedgeIter h17 = h16->next();
-        // HalfedgeIter h18 = h17->next();
-        // HalfedgeIter h19 = h17->twin();
-        // HalfedgeIter h20 = h19->next();
-        // HalfedgeIter h21 = h20->next();
-        // HalfedgeIter h22 = h21->twin();
-        // HalfedgeIter h23 = h22->next();
-        // HalfedgeIter h24 = h23->next();
-        // HalfedgeIter h25 = h24->twin();
-        // HalfedgeIter h26 = h25->next();
-        // HalfedgeIter h27 = h26->next();
-        // HalfedgeIter h28 = h27->twin();
-        // HalfedgeIter h29 = h28->next();
-        // HalfedgeIter h30 = h29->next();
 
-
-        // FaceIter f1 = h1->face();
-        // FaceIter f2 = h18->face();
-        // FaceIter f3 = h30->face();
-        // FaceIter f4 = h4->face();
-        // FaceIter f5 = h14->face();
-        // FaceIter f6 = h19->face();
-        // FaceIter f7 = h25->face();
-        // FaceIter f8 = h24->face();
-        // FaceIter f9 = h7->face();
-        // FaceIter f10 = h10->face();
-
-        // EdgeIter e1 = h2->edge();
-        // EdgeIter e2 = h3->edge();
-        // EdgeIter e3 = h17->edge();
-        // EdgeIter e4 = h16->edge();
-        // EdgeIter e5 = h14->edge();
-        // EdgeIter e6 = h12->edge();
-        // EdgeIter e7 = h5->edge();
-        // EdgeIter e8 = h6->edge();
-        // EdgeIter e9 = h21->edge();
-        // EdgeIter e10 = h20->edge();
-        // EdgeIter e11 = h28->edge();
-        // EdgeIter e12 = h29->edge();
-        // EdgeIter e13 = h26->edge();
-        // EdgeIter e14 = h23->edge();
-        // EdgeIter e15 = h11->edge();
-        // EdgeIter e16 = h8->edge();
-        // EdgeIter e17 = h9->edge();
-        // EdgeIter e18 = h25->edge();
-
-        // VertexIter v1 = h4->vertex();
-        // VertexIter v2 = h18->vertex();
-        // VertexIter v3 = h3->vertex();
-        // VertexIter v4 = h17->vertex();
-        // VertexIter v5 = h12->vertex();
-        // VertexIter v6 = h27->vertex();
-        // VertexIter v7 = h23->vertex();
-        // VertexIter v8 = h6->vertex();
-        // VertexIter v9 = h24->vertex();
-        // VertexIter v10 = h9->vertex();
 
         HalfedgeIter h1 = e0->halfedge();
-        HalfedgeIter h2 = h1->next();
-        HalfedgeIter h3 = h2->next();
-        HalfedgeIter h4 = h3->twin();
-        HalfedgeIter h7 = h4->next()->next()->twin();
-        HalfedgeIter h10 = h7->next()->next()->twin();
-        HalfedgeIter h13 = h10->next()->next()->twin();
-        HalfedgeIter h14 = h13->next();
-        HalfedgeIter h15 = h14->next();
-        HalfedgeIter h18 = h1->twin();
-        HalfedgeIter h16 = h18->next();
-        HalfedgeIter h17 = h16->next();
-        HalfedgeIter h19 = h17->twin();
-        HalfedgeIter h22 = h19->next()->next()->twin();
-        HalfedgeIter h25 = h22->next()->next()->twin();
-        HalfedgeIter h28 = h25->next()->next()->twin();
-        HalfedgeIter h29 = h28->next();
-        HalfedgeIter h30 = h29->next();
+        HalfedgeIter h3 = h1->next();
+        HalfedgeIter h5 = h3->next();
+        HalfedgeIter h7 = h3->twin();
+        HalfedgeIter h9 = h5->twin();
 
-        FaceIter f1 = h1->face();
-        FaceIter f2 = h18->face();
-        FaceIter f3 = h30->face();
-        FaceIter f5 = h15->face();
-
-        EdgeIter e1 = h2->edge();
-        EdgeIter e4 = h16->edge();
+        HalfedgeIter h2 = h1->twin();
+        HalfedgeIter h4 = h2->next();
+        HalfedgeIter h6 = h4->next();
+        HalfedgeIter h8 = h4->twin();
+        HalfedgeIter h10 = h6->twin();
 
         VertexIter v1 = h1->vertex();
-        VertexIter v2 = h18->vertex();
-        VertexIter v3 = h3->vertex();
-        VertexIter v4 = h17->vertex();
+        VertexIter v2 = h2->vertex();
 
 
-        h4->vertex() = v1;
-        h7->vertex() = v1;
-        h10->vertex() = v1;
-        h13->vertex() = v1;
-        h19->vertex() = v1;
-        h22->vertex() = v1;
-        h25->vertex() = v1;
-        h28->vertex() = v1;
 
-        h3->next() = h28;
-        h29->next() = h3;
+        // check 
 
-        h17->next() = h13;
-        h14->next() = h17;
+        int connected = 0;
+        HalfedgeIter hc = v1->halfedge();
+        do {
+            HalfedgeIter hc_twin = hc->twin(); // get the vertex of the current halfedge
 
-        h3->face() = f3;
-        h17->face() = f5;
 
-        f3->halfedge() = h3;
-        f5->halfedge() = h17;
+            HalfedgeIter hc1 = hc_twin;
+            do {
+                HalfedgeIter hc1_twin = hc1->twin(); // get the vertex of the current halfedge
+                VertexIter vc = hc1_twin->vertex();
+                if (vc == v2){
+                    connected += 1;
+                }
+                hc1 = hc1_twin->next();               // move to the next outgoing halfedge of the vertex.
+            } while(hc1 != hc_twin);        // keep going until we're back at the beginning
 
-        v1->halfedge() = h4;
-        v3->halfedge() = h3;
-        v4->halfedge() = h17;
 
+            hc = hc_twin->next();               // move to the next outgoing halfedge of the vertex.
+        } while(hc != v1->halfedge());        // keep going until we're back at the beginning
+
+        if (connected > 2) {
+            return VertexIter();
+        }
+
+        // new possition for v1
         Vector3D p = (v1->position+v2->position)/2.0;
         v1->position = p;
-        v2->position = p;
 
+        //preprocessing
+
+        h3->edge()->halfedge() = h3;
+        h5->edge()->halfedge() = h9;
+        h4->edge()->halfedge() = h8;
+        h6->edge()->halfedge() = h6;
+
+        EdgeIter e1 = h5->edge();
+        EdgeIter e2 = h4->edge();
+
+        h7->edge() = e1;
+        h10->edge() = e2;
+        VertexIter v3 = h7->vertex();
+        VertexIter v4 = h8->vertex();
+        v3->halfedge() = h7;
+        v4->halfedge() = h8;
+
+        // attach halfedges to v1
+        v2->halfedge() = h3;
+        HalfedgeIter ht = h10;
+        h10->vertex() = v1;
+        HalfedgeIter h0 = v2->halfedge();    // get one of the outgoing halfedges of the vertex
+        do {
+            HalfedgeIter h0_twin = h0->twin(); // get the vertex of the current halfedge
+            h0 = h0_twin->next();               // move to the next outgoing halfedge of the vertex.
+            h0->vertex() = v1;
+        } while(h0 != ht);        // keep going until we're back at the beginning
+
+
+        //join the gap
+        h9->twin() = h7;
+        h7->twin() = h9;
+
+        h8->twin() = h10;
+        h10->twin() = h8;
+
+        v1->halfedge() = h9;
+
+        //delete stuff
+        deleteFace(h1->face());
+        deleteFace(h2->face());
+
+        deleteEdge(h3->edge());
+        deleteEdge(h6->edge());
+        deleteEdge(e0);
+
+        // deleteVertex(v1);
         deleteVertex(v2);
 
-        deleteFace(f1);
-        deleteFace(f2);
-
-        deleteEdge(e0);
-        deleteEdge(e1);
-        deleteEdge(e4);
-
+        deleteHalfedge(h1);
         deleteHalfedge(h2);
-        deleteHalfedge(h30);
-        deleteHalfedge(h16);
-        deleteHalfedge(h15);
-        // deleteHalfedge(h18);
-        // deleteHalfedge(h1);
-        
+        deleteHalfedge(h3);
+        deleteHalfedge(h4);
+        deleteHalfedge(h5);
+        deleteHalfedge(h6);
+
         
         return v1;
         // return VertexIter();
@@ -509,7 +464,10 @@ namespace CGL {
         Vector3D b = Vector3D(-K(0,3),-K(1,3),-K(2,3));
         Vector3D x = A.inv() * b;
         optimalPoint = x;
-        score = dot(x,(K*x));
+        Vector4D xv = Vector4D(x.x,x.y,x.z,1.0);
+        Vector4D n = Vector4D(dot(xv,K.column(0)),dot(xv,K.column(1)),dot(xv,K.column(2)),dot(xv,K.column(3)));
+        score = dot(n,xv);
+        // score = dot(x,(K*x));
         edge = _edge;
     }
 
@@ -556,8 +514,7 @@ namespace CGL {
         }
         
         Size Start = mesh.nFaces();
-        // while(mesh.nFaces() >= 10) {
-            cout << Start << endl;
+        while(mesh.nFaces() > 300) {
             // Get the cheapest edge from the queue.
             EdgeRecord bestEdge = queue.top();
             // Remove the cheapest edge from the queue by calling pop().
@@ -570,30 +527,45 @@ namespace CGL {
             // Remove any edge touching either of its endpoints from the queue.
             for (VertexIter vr: verts) {
                 HalfedgeIter h1 = vr->halfedge();    // get one of the outgoing halfedges of the vertex
+                HalfedgeIter ht = vr->halfedge(); 
                 do {
                     HalfedgeIter h1_twin = h1->twin(); // get the vertex of the current halfedge
                     VertexIter vr = h1_twin->vertex(); // vertex is 'source' of the half edge.
                     queue.remove(h1_twin->edge());
-                    h1 = h1_twin->next();               // move to the next outgoing halfedge of the vertex.
-                  } while(h1 != vr->halfedge());        // keep going until we're back at the beginning
+                    h1 = h1_twin->next(); 
+                  } while(h1 != ht);        // keep going until we're back at the beginning
             }
             // Collapse the edge.
             VertexIter v = mesh.collapseEdge(bestEdge.edge);
-            mesh.edgesBegin();
-            cout << Start << endl;
-            v->position = bestEdge.optimalPoint;
-            // Set the quadric of the new vertex to the quadric computed in Step 2.
-            v->quadric = K;
-            // Insert any edge touching the new vertex into the queue, creating new edge records for each of them.
-            HalfedgeIter h = v->halfedge();    // get one of the outgoing halfedges of the vertex
-            do {
-                HalfedgeIter h_twin = h->twin(); // get the vertex of the current halfedge
-                VertexIter v = h_twin->vertex(); // vertex is 'source' of the half edge.
-                EdgeRecord myRecord(h_twin->edge());
-                queue.insert(myRecord);
-                h = h_twin->next();               // move to the next outgoing halfedge of the vertex.
-              } while(h != v->halfedge());        // keep going until we're back at the beginning
-        // }
+            if (v != VertexIter()){
+                mesh.edgesBegin();
+                v->position = bestEdge.optimalPoint;
+                // Set the quadric of the new vertex to the quadric computed in Step 2.
+                v->quadric = K;
+                // Insert any edge touching the new vertex into the queue, creating new edge records for each of them.
+                HalfedgeIter h = v->halfedge();    // get one of the outgoing halfedges of the vertex
+                do {
+                    HalfedgeIter h_twin = h->twin(); // get the vertex of the current halfedge
+                    VertexIter v = h_twin->vertex(); // vertex is 'source' of the half edge.
+                    EdgeRecord myRecord(h_twin->edge());
+                    queue.insert(myRecord);
+                    h = h_twin->next();               // move to the next outgoing halfedge of the vertex.
+                  } while(h != v->halfedge());        // keep going until we're back at the beginning
+            } else {
+
+                for (VertexIter vr: verts) {
+                    HalfedgeIter h1 = vr->halfedge();    // get one of the outgoing halfedges of the vertex
+                    HalfedgeIter ht = vr->halfedge(); 
+                    do {
+                        HalfedgeIter h1_twin = h1->twin(); // get the vertex of the current halfedge
+                        VertexIter vr = h1_twin->vertex(); // vertex is 'source' of the half edge.
+                        queue.insert(h1_twin->edge());
+                        h1 = h1_twin->next(); 
+                      } while(h1 != ht);        // keep going until we're back at the beginning
+                }
+
+            }
+        }
 
       // TODO Until we reach the target edge budget, collapse the best edge.  Remember
       // TODO to remove from the queue any edge that touches the collapsing edge BEFORE

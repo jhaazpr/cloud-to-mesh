@@ -29,19 +29,31 @@ namespace CGL {
       cout << "Finding seed triangle..." << endl;
       bool success = this->find_seed_triangle(&triangle_indices, rho);
       if (success) {
+        printf("seed triangle found\n");
         BPAEdge *active_edge;
+        cout << active_edge->my_loop << endl;
         success = this->get_active_edge(active_edge);
         if (success) {
           cout << "Found active edge, now ball pivoting..." << endl;
           cout << "Front address " << this << endl;
-          cout << "Active edge front address " << active_edge->my_loop << endl;
-          cout << active_edge->my_loop->my_front->vertices.size() << endl;
+          // cout << "Active edge front address " << active_edge->my_loop << endl;
+          // cout << active_edge->my_loop->my_front->vertices.size() << endl;
           cout << "yay" << endl;
           Index next_index;
           success = active_edge->ball_pivot(rho, &next_index);
+          // cout << "FUCK" << &this->vertices_on_front << "ME " << &this->vertices_used << endl;
+          // cout << "Vertices on FRont" << endl;
+          // for(bool i : this->vertices_on_front){
+          //   cout << i << endl;
+          // }
+          // cout << "Vertices Used" << endl;
+          // for(bool i : this->vertices_used){
+          //   cout << i << endl;
+          // }
           if (success) {
             cout << "pivot edge's indices: " << active_edge->i << " ," << active_edge->j << endl;
             cout << "next index is: " << next_index << endl;
+            output_triangle(active_edge->i, active_edge->j, next_index);
           } else {
             cout << "ball pivot failed" << endl;
           }
@@ -92,7 +104,12 @@ namespace CGL {
         triangle_indices.push_back(j);
         triangle_indices.push_back(k);
         polygon.vertex_indices = triangle_indices;
+        cout << "# poly" << pm->polygons.size() <<  endl;
+        cout << "# vert" << pm->vertices.size() <<  endl;
         this->pm->polygons.push_back(polygon);
+        cout << "polygon" << i << " " << j << " " <<  k << " " << endl;
+        cout << "# poly" << pm->polygons.size() <<  endl;
+        cout << "# vert" << pm->vertices.size() <<  endl;
     }
 
     BPAEdge::BPAEdge( void )
@@ -139,11 +156,15 @@ namespace CGL {
     /**
      * Return all indices candidate points in a 2 rho radius of m
      */
-    std::vector<Index> find_candidate_points(double rho, Vector3D m, std::vector<Vector3D> vertices){
+    std::vector<Index> BPAEdge::find_candidate_points(double rho, Vector3D m, std::vector<Vector3D> vertices){
+        // cout << "RHO: " << 2 * rho << endl;
+        // cout << this->i << ", "<< this->j<< endl;
         std::vector<Index> candidates;
         for (std::size_t i = 0; i != vertices.size(); ++i) {
-            if ((vertices[i] - m).norm()  < 2 * rho){
+          // cout << i << ": "<< vertices[i] <<  " " <<(vertices[i] - m).norm() <<endl;
+            if ((vertices[i] - m).norm()  < (2 * rho) && this->i != i && this->j != i){
                 candidates.push_back(i);
+                cout << "candidate: " << vertices[i] << endl;
             }
         }
         return candidates;
@@ -163,7 +184,36 @@ namespace CGL {
         }
         return candidates;
     }
+    /**
+    * finds the center of a sphere given 3 points and a radius
+    */
+    Vector3D get_sphere_center(Vector3D i,Vector3D j, Vector3D x, double rho){
+      Vector3D ji = j-i;
+      Vector3D xi = x-i;
+      Vector3D n = cross(ji, xi);
+      cout << "i: " << i << endl;
+      cout << "j: " << j << endl;
+      cout << "x: " << x << endl;
 
+      cout << "ji: " << ji << endl;
+      cout << "xi: " << xi << endl;
+      cout << "cross(ji, xi): " << n << endl;
+
+      Vector3D p0 = cross(dot(ji, ji) * xi - dot(xi, xi) * ji, n) / (2 * dot(n, n)) + i;
+      cout << dot(ji, ji) << endl;
+      cout << "a" << dot(ji, ji) * xi - dot(xi, xi) * ji << endl;  
+      cout << "num: " << cross(dot(ji, ji) * xi - dot(xi, xi) * ji, n) << endl;
+      cout << "den: " << (2 * dot(n, n)) << endl;
+      cout << "frc: " << cross(dot(ji, ji) * xi - dot(xi, xi) * ji, n) / (2 * dot(n, n))<< endl;
+      cout << "p0: " << p0 << endl;
+      cout << "dot product" << dot(p0-i, p0-i) << endl;
+      double t1 = sqrt((rho*rho - dot(p0-i, p0-i))/ dot(n, n));
+      // Vector3D t2 = -sqrt((rho^2 - dot(p0-i, p0-i))/ dot(n, n));
+      cout << "t1: " << t1 << endl;
+      Vector3D c1 = p0 + (n * t1);
+      cout << "c1: " << c1 << endl;
+      return c1;
+    }
     /**
      * Documentation goes here
      */
@@ -171,14 +221,23 @@ namespace CGL {
         cout << "BP: get edge's loop's front's vertices" << endl;
         // cout << this->my_loop->my_front->vertices.size() << endl;
         // cout << "yay" << endl;
-        std::vector<Vector3D> vertices = this->my_loop->my_front->vertices;
+        // BPALoop *loop = this->my_loop;
+        cout << "a" << endl;
+        BPAFront *front = my_loop->my_front;
+        cout << "b" << endl;
+        std::vector<Vector3D> vertices = front->vertices;
 
         cout << "success" << endl;
         Vector3D m = (vertices[i] + vertices[j])/2;
         Vector3D i = vertices[this->i];
         Vector3D j = vertices[this->j];
-        double r = (m - vertices[this->o]).norm();
-
+        Vector3D o = vertices[this->o];
+        cout << "i: " << i <<  "j: " << j << endl;
+        Vector3D c_ijo = get_sphere_center(i,j,o,rho);
+        double r = (m - c_ijo).norm();
+        cout << "o: " << vertices[this->o] << endl;
+        cout << "m: " << m << endl;
+        cout << "r: " << r << endl;
         // find all candidate points x
         std::vector<Index> candidates = find_candidate_points(rho, m, vertices);
         cout << "Ball pivot found candidate #: " << candidates.size() << endl;
@@ -187,23 +246,15 @@ namespace CGL {
 
         // calculate all centers of spheres that touch i,j,x
         for(Index x_i : candidates){
-            Vector3D x = vertices[x_i];
-            Vector3D ji = j-i;
-            Vector3D xi = x-i;
-            Vector3D n = cross(ji, xi);
-
-            Vector3D p0 = cross(dot(ji, ji) * xi - dot(xi, xi) * ji, n) / (2 * dot(n, n)) + i;
-            if (rho*rho >= dot(p0-i, p0-i)){
-                double t1 = sqrt((rho*rho - dot(p0-i, p0-i))/ dot(n, n));
-                // Vector3D t2 = -sqrt((rho^2 - dot(p0-i, p0-i))/ dot(n, n));
-                Vector3D c1 = p0 + (n * t1);
-                // Vector3D c2 = p0 + n * t2;
-                if ((c1-m).norm() == r){
-                    center_indices.push_back(x_i);
-                    centers.push_back(c1);
-                }
+          Vector3D x = vertices[x_i];
+          Vector3D c = get_sphere_center(i, j, x, rho);
+              cout << "distance from m: "<< (c-m).norm() << endl;
+              if ((c-m).norm() == r){
+                  center_indices.push_back(x_i);
+                  centers.push_back(c);
             }
         }
+        cout << "centers size : " << centers.size() << endl;
 
         // checking whether the center lies on the circle gamma
         Vector3D b = vertices[this->o] - m;
@@ -250,8 +301,28 @@ namespace CGL {
     bool BPAFront::get_active_edge(BPAEdge *e) {
         for (int i = 0; i < this->loops.size(); ++i) {
             BPAEdge* edge = loops[i]->start_edge;
+            printf("1\n");
+            if(edge->is_active) {
+                printf("2\n");
+                e = edge;
+                printf("3\n");
+                cout << "hello" << endl;
+                cout << e->my_loop->my_front->vertices.size() << endl;
+                cout << "yay" << endl;
+                // cout << "found active edge, testing its integrity" << endl;
+                // e->my_loop->my_front->vertices;
+                // cout << "success" << endl;
+                return true;
+            }   
+            printf("loop: %d\n",i);
+            cout << edge << endl;
+            cout << edge->is_active << endl;
+            cout << loops[i]->start_edge << endl;
+
             while(!edge->is_active && edge != loops[i]->start_edge){
                 edge = edge->next_edge;
+                printf("in while\n");
+                cout << edge << endl;
             }
             if(edge->is_active) {
                 *e = *edge;
@@ -274,7 +345,7 @@ namespace CGL {
      */
     BPALoop *BPAFront::insert_edge(BPAEdge *edge) {
       BPALoop *loop = new BPALoop(edge, this);
-      cout << "Inserting edge owned by front: " << this << endl;
+      cout << "Inserting edge owned by front: " << edge << endl;
       edge->my_loop = loop;
       this->loops.push_back(loop);
       return loop;
@@ -298,6 +369,7 @@ namespace CGL {
       // Make polygon
       Polygon polygon;
       std::vector<Index> triangle_indices;
+      
       triangle_indices.push_back(i);
       triangle_indices.push_back(j);
       triangle_indices.push_back(k);
@@ -308,14 +380,26 @@ namespace CGL {
       // Make new edges to push to a loop
       // TODO: set fronts
       BPAEdge *e0, *e1, *e2;
-      e0 = new BPAEdge(i,j,k, e2, e1, nullptr);
-      e1 = new BPAEdge(j,k,i, e0, e2, nullptr);
-      e2 = new BPAEdge(k,j,i, e1, e0, nullptr);
-
+      BPALoop* loop;
+      cout << e0 << " " << e1 << " " << e2 << endl;
+      loop = new BPALoop(nullptr, this);
+      e0 = new BPAEdge(i,j,k, e2, e1, loop);
+      e1 = new BPAEdge(j,k,i, e0, e2, loop);
+      e2 = new BPAEdge(k,j,i, e1, e0, loop);
+      loop->start_edge = e0;
+      printf("begin the litany of print statemenst\n");
+      cout << e0->my_loop << endl;
+      cout << e1->my_loop << endl;
+      cout << e2->my_loop << endl;
+      cout << e0 << " " << loop->start_edge << endl;
+      cout << loop << endl;
+      printf("end the litany of print statemenst\n");
       // Insert them into front, method updates the last field.
-      insert_edge(e0);
-      insert_edge(e1);
-      insert_edge(e2);
+      this->loops.push_back(loop);
+
+      // insert_edge(e0);
+      // insert_edge(e1);
+      // insert_edge(e2);
       cout << "hell01" << endl;
       cout << e0->my_loop->my_front->vertices.size() << endl;
       cout << "yay1" << endl;
@@ -355,6 +439,7 @@ namespace CGL {
               indices->push_back(base_index);
               indices->push_back(i);
               indices->push_back(j);
+              cout << "seed triangle indices" << base_index << " " << i << " " << j << endl;
               return true;
               }
             }

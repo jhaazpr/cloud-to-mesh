@@ -156,14 +156,14 @@ namespace CGL {
                 HalfedgeIter hab;
 
                 // check if this halfedge already exists; if so, we have a problem!
-                if (pairToHalfedge.find(ab) != pairToHalfedge.end()) {
-                    cerr << "Error converting polygons to halfedge mesh: found multiple oriented edges with indices (" << a << ", " << b << ")." << endl;
-                    cerr << "This means that either (i) more than two faces contain this edge (hence the surface is nonmanifold), or" << endl;
-                    cerr << "(ii) there are exactly two faces containing this edge, but they have the same orientation (hence the surface is" << endl;
-                    cerr << "not consistently oriented." << endl;
-                    exit(1);
-                } else // otherwise, the halfedge hasn't been allocated yet
-                {
+                // if (pairToHalfedge.find(ab) != pairToHalfedge.end()) {
+                //     cerr << "Error converting polygons to halfedge mesh: found multiple oriented edges with indices (" << a << ", " << b << ")." << endl;
+                //     cerr << "This means that either (i) more than two faces contain this edge (hence the surface is nonmanifold), or" << endl;
+                //     cerr << "(ii) there are exactly two faces containing this edge, but they have the same orientation (hence the surface is" << endl;
+                //     cerr << "not consistently oriented." << endl;
+                //     exit(1);
+                // } else // otherwise, the halfedge hasn't been allocated yet
+                // {
                     // so, we point this vertex pair to a new halfedge
                     hab = newHalfedge();
                     pairToHalfedge[ab] = hab;
@@ -179,7 +179,7 @@ namespace CGL {
                     // keep a list of halfedges in this face, so that we can later
                     // link them together in a loop (via their "next" pointers)
                     faceHalfedges.push_back(hab);
-                }
+                // }
 
                 // Also, check if the twin of this halfedge has already been constructed (during
                 // construction of a different face).  If so, link the twins together and allocate
@@ -329,10 +329,10 @@ namespace CGL {
                 h = h->twin()->next();
             } while (h != v->halfedge());
 
-            if (count != vertexDegree[v]) {
-                cerr << "Error converting polygons to halfedge mesh: at least one of the vertices is nonmanifold." << endl;
-                exit(1);
-            }
+            // if (count != vertexDegree[v]) {
+            //     cerr << "Error converting polygons to halfedge mesh: at least one of the vertices is nonmanifold." << endl;
+            //     exit(1);
+            // }
         } // end loop over vertices
 
         // Now that we have the connectivity, we copy the list of vertex

@@ -104,6 +104,10 @@ bool loadPLY(const char * path, std::vector<Vector3D> & out_vertices) {
             break; // EOF = End Of File. Quit the loop.
         }
 
+        if (strcmp(lineHeader, "end_header") == 0) {
+            break;
+        }
+
         if ( strcmp( lineHeader, "element" ) == 0 ) {
             char type[128];
             int count;
@@ -113,20 +117,20 @@ bool loadPLY(const char * path, std::vector<Vector3D> & out_vertices) {
             }
         }
 
-        if (strcmp(lineHeader, "end_header") == 0) {
-            break;
-        }
     }
 
     cout << "LoadPLY: read number of vertices: " << vertex_count << endl;
 
     // Main loop of parsing vertices
-    while (vertex_count-- > 0) {
+    while (--vertex_count >= 0) {
         Vector3D vertex;
         float dummy0, dummy1;
-        fscanf(file, "%lf %lf %lf %f %f\n", &vertex.x, &vertex.y, &vertex.z , &dummy0, &dummy1);
+
+        //NOTE: uncomment one based on the format of the ply file
+        // fscanf(file, "%lf %lf %lf %f %f\n", &vertex.x, &vertex.y, &vertex.z , &dummy0, &dummy1);
+        fscanf(file, "%lf %lf %lf\n", &vertex.x, &vertex.y, &vertex.z);
+
         temp_vertices.push_back(vertex);
-//        printf("%f %f %f\n", vertex.x, vertex.y, vertex.z);
     }
 
     out_vertices = temp_vertices;

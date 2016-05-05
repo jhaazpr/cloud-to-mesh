@@ -114,15 +114,15 @@ namespace CGL {
 
             // check that all vertices of the current polygon are distinct
             Size degree = p->size(); // number of vertices in this polygon
-            if (polygonIndices.size() < degree) {
-                cerr << "Error converting polygons to halfedge mesh: one of the input polygons does not have distinct vertices!" << endl;
-                cerr << "(vertex indices:";
-                for (IndexListCIter i = p->begin(); i != p->end(); i++) {
-                    cerr << " " << *i;
-                }
-                cerr << ")" << endl;
-                exit(1);
-            } // end check that polygon vertices are distinct
+            // if (polygonIndices.size() < degree) {
+            //     cerr << "Error converting polygons to halfedge mesh: one of the input polygons does not have distinct vertices!" << endl;
+            //     cerr << "(vertex indices:";
+            //     for (IndexListCIter i = p->begin(); i != p->end(); i++) {
+            //         cerr << " " << *i;
+            //     }
+            //     cerr << ")" << endl;
+            //     exit(1);
+            // } // end check that polygon vertices are distinct
 
         } // end basic sanity checks on input
 
@@ -337,12 +337,12 @@ namespace CGL {
 
         // Now that we have the connectivity, we copy the list of vertex
         // positions into member variables of the individual vertices.
-        if (!isPointCloud && vertexPositions.size() != vertices.size()) {
-            cerr << "Error converting polygons to halfedge mesh: number of vertex positions is different from the number of distinct vertices!" << endl;
-            cerr << "(number of positions in input: " << vertexPositions.size() << ")" << endl;
-            cerr << "(  number of vertices in mesh: " << vertices.size() << ")" << endl;
-            exit(1);
-        }
+        // if (!isPointCloud && vertexPositions.size() != vertices.size()) {
+        //     cerr << "Error converting polygons to halfedge mesh: number of vertex positions is different from the number of distinct vertices!" << endl;
+        //     cerr << "(number of positions in input: " << vertexPositions.size() << ")" << endl;
+        //     cerr << "(  number of vertices in mesh: " << vertices.size() << ")" << endl;
+        //     exit(1);
+        // }
         // Since an STL map internally sorts its keys, we can iterate over the map from vertex indices to
         // vertex iterators to visit our (input) vertices in lexicographic order
         int i = 0;

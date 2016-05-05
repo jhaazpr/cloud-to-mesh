@@ -11,6 +11,7 @@
 namespace CGL {
     // In case you want a pyramid NOW.
     Polymesh BPA_hardcode(std::vector<Vector3D>& vertices);
+    BPAFront *global_front;
 
     /**
      * Because of the interface in meshEdit that already exists, we need to return
@@ -25,6 +26,7 @@ namespace CGL {
       // cout << "BPA yo, voyteces: " << vertices.size() << endl;
       // Polymesh pm;
       // BPAFront front(vertices, &pm, 1.0);
+      global_front = this;
       std::vector<Index> triangle_indices;
       cout << "Finding seed triangle..." << endl;
       bool success = this->find_seed_triangle(&triangle_indices, rho);
@@ -54,6 +56,7 @@ namespace CGL {
             cout << "pivot edge's indices: " << active_edge->i << " ," << active_edge->j << endl;
             cout << "next index is: " << next_index << endl;
             output_triangle(active_edge->i, active_edge->j, next_index);
+            cout << "faces in mesh: " << this->pm->polygons.size() << endl;
           } else {
             cout << "ball pivot failed" << endl;
           }
@@ -156,13 +159,12 @@ namespace CGL {
     /**
      * Return all indices candidate points in a 2 rho radius of m
      */
-    std::vector<Index> BPAEdge::find_candidate_points(double rho, Vector3D m, std::vector<Vector3D> vertices){
-        // cout << "RHO: " << 2 * rho << endl;
-        // cout << this->i << ", "<< this->j<< endl;
+
+    std::vector<Index> find_candidate_points(double rho, Vector3D m, Index exclude_i,
+                        Index exclude_j, std::vector<Vector3D> vertices){
         std::vector<Index> candidates;
         for (std::size_t i = 0; i != vertices.size(); ++i) {
-          // cout << i << ": "<< vertices[i] <<  " " <<(vertices[i] - m).norm() <<endl;
-            if ((vertices[i] - m).norm()  < (2 * rho) && this->i != i && this->j != i){
+            if ((vertices[i] - m).norm()  < 2 * rho && i != exclude_i && i != exclude_j){
                 candidates.push_back(i);
                 cout << "candidate: " << vertices[i] << endl;
             }
@@ -201,7 +203,7 @@ namespace CGL {
 
       Vector3D p0 = cross(dot(ji, ji) * xi - dot(xi, xi) * ji, n) / (2 * dot(n, n)) + i;
       cout << dot(ji, ji) << endl;
-      cout << "a" << dot(ji, ji) * xi - dot(xi, xi) * ji << endl;  
+      cout << "a" << dot(ji, ji) * xi - dot(xi, xi) * ji << endl;
       cout << "num: " << cross(dot(ji, ji) * xi - dot(xi, xi) * ji, n) << endl;
       cout << "den: " << (2 * dot(n, n)) << endl;
       cout << "frc: " << cross(dot(ji, ji) * xi - dot(xi, xi) * ji, n) / (2 * dot(n, n))<< endl;
@@ -221,13 +223,12 @@ namespace CGL {
         cout << "BP: get edge's loop's front's vertices" << endl;
         // cout << this->my_loop->my_front->vertices.size() << endl;
         // cout << "yay" << endl;
-        // BPALoop *loop = this->my_loop;
-        cout << "a" << endl;
-        BPAFront *front = my_loop->my_front;
-        cout << "b" << endl;
-        std::vector<Vector3D> vertices = front->vertices;
+        // BPAFront *front = this->my_loop->my_front;
+        std::vector<Vector3D> vertices = global_front->vertices;
 
         cout << "success" << endl;
+        cout << i << endl;
+        cout << j << endl;
         Vector3D m = (vertices[i] + vertices[j])/2;
         Vector3D i = vertices[this->i];
         Vector3D j = vertices[this->j];
@@ -239,10 +240,16 @@ namespace CGL {
         cout << "m: " << m << endl;
         cout << "r: " << r << endl;
         // find all candidate points x
-        std::vector<Index> candidates = find_candidate_points(rho, m, vertices);
+        std::vector<Index> candidates = CGL::find_candidate_points(rho, m, this->i, this->j, global_front->vertices);
         cout << "Ball pivot found candidate #: " << candidates.size() << endl;
         std::vector<Index> center_indices;
         std::vector<Vector3D> centers;
+
+        //FIXME: hard code
+        Index chosen_vtx = candidates[0];
+        global_front->output_triangle(chosen_vtx, this->i, this->j);
+        *k = chosen_vtx;
+        return true;
 
         // calculate all centers of spheres that touch i,j,x
         for(Index x_i : candidates){
@@ -304,7 +311,7 @@ namespace CGL {
             printf("1\n");
             if(edge->is_active) {
                 printf("2\n");
-                e = edge;
+                *e = *edge;
                 printf("3\n");
                 cout << "hello" << endl;
                 cout << e->my_loop->my_front->vertices.size() << endl;
@@ -313,7 +320,7 @@ namespace CGL {
                 // e->my_loop->my_front->vertices;
                 // cout << "success" << endl;
                 return true;
-            }   
+            }
             printf("loop: %d\n",i);
             cout << edge << endl;
             cout << edge->is_active << endl;
@@ -369,7 +376,7 @@ namespace CGL {
       // Make polygon
       Polygon polygon;
       std::vector<Index> triangle_indices;
-      
+
       triangle_indices.push_back(i);
       triangle_indices.push_back(j);
       triangle_indices.push_back(k);
@@ -729,7 +736,7 @@ namespace CGL {
 
 
 
-        // check 
+        // check
 
         int connected = 0;
         HalfedgeIter hc = v1->halfedge();
@@ -893,12 +900,12 @@ namespace CGL {
             // Remove any edge touching either of its endpoints from the queue.
             for (VertexIter vr: verts) {
                 HalfedgeIter h1 = vr->halfedge();    // get one of the outgoing halfedges of the vertex
-                HalfedgeIter ht = vr->halfedge(); 
+                HalfedgeIter ht = vr->halfedge();
                 do {
                     HalfedgeIter h1_twin = h1->twin(); // get the vertex of the current halfedge
                     VertexIter vr = h1_twin->vertex(); // vertex is 'source' of the half edge.
                     queue.remove(h1_twin->edge());
-                    h1 = h1_twin->next(); 
+                    h1 = h1_twin->next();
                   } while(h1 != ht);        // keep going until we're back at the beginning
             }
             // Collapse the edge.
@@ -921,12 +928,12 @@ namespace CGL {
 
                 for (VertexIter vr: verts) {
                     HalfedgeIter h1 = vr->halfedge();    // get one of the outgoing halfedges of the vertex
-                    HalfedgeIter ht = vr->halfedge(); 
+                    HalfedgeIter ht = vr->halfedge();
                     do {
                         HalfedgeIter h1_twin = h1->twin(); // get the vertex of the current halfedge
                         VertexIter vr = h1_twin->vertex(); // vertex is 'source' of the half edge.
                         queue.insert(h1_twin->edge());
-                        h1 = h1_twin->next(); 
+                        h1 = h1_twin->next();
                       } while(h1 != ht);        // keep going until we're back at the beginning
                 }
 

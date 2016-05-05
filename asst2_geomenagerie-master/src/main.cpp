@@ -13,7 +13,8 @@ using namespace CGL;
 
 #define msg(s) cerr << "[Collada Viewer] " << s << endl;
 
-bool loadPLY(const char * path, std::vector<Vector3D> & out_vertices);
+bool loadPLY(const char * path, std::vector<Vector3D> & out_vertices,
+              std::vector<Polygon> &out_polygons);
 
 int loadFile(MeshEdit* collada_viewer, const char* path) {
 
@@ -52,7 +53,8 @@ int loadFile(MeshEdit* collada_viewer, const char* path) {
         cout << "You cool" << endl;
         // Use GL_POINTS primitve somehow
         std::vector<Vector3D> out_vertices;
-        bool success = loadPLY(path, out_vertices);
+        std::vector<Polygon> out_polygons;
+        bool success = loadPLY(path, out_vertices, out_polygons);
         //TODO: actually use the points
 
         // Set up scene
@@ -62,15 +64,27 @@ int loadFile(MeshEdit* collada_viewer, const char* path) {
         node.instance = cam;
         scene->nodes.push_back(node);
         PointCloud* point_cloud = new PointCloud();
+        Polymesh *polymesh = new Polymesh();
 
         // Add vertices to scene
         for (Vector3D v : out_vertices) {
           point_cloud->vertices.push_back(v);
+          polymesh->vertices.push_back(v);
+        }
+
+        // Add polygons to scene
+        for (Polygon p : out_polygons) {
+          polymesh->polygons.push_back(p);
         }
 
         point_cloud->type = POINT_CLOUD;
         node.instance = point_cloud;
         scene->nodes.push_back(node);
+
+        // polymesh->type = POLYMESH;
+        // node.instance = polymesh;
+        // scene->nodes.push_back(node);
+
     } else {
         return -1;
     }
@@ -86,11 +100,14 @@ int loadFile(MeshEdit* collada_viewer, const char* path) {
     return 0;
 }
 
-bool loadPLY(const char * path, std::vector<Vector3D> & out_vertices) {
+bool loadPLY(const char * path, std::vector<Vector3D> & out_vertices,
+                std::vector<Polygon> &out_polygons) {
     printf("Load PLY called\n");
     FILE* file = fopen(path, "r");
     std::vector<Vector3D> temp_vertices;
+    std::vector<Polygon> temp_polygons;
     int vertex_count = 0;
+    int face_count = 0;
 
     // Read until we get to element vertices <number>
     char lineHeader[512];
@@ -115,11 +132,16 @@ bool loadPLY(const char * path, std::vector<Vector3D> & out_vertices) {
             if (strcmp(type, "vertex") == 0) {
                 vertex_count = count;
             }
+
+            if (strcmp(type, "face") == 0) {
+                face_count = count;
+            }
         }
 
     }
 
     cout << "LoadPLY: read number of vertices: " << vertex_count << endl;
+    // cout << "LoadPLY: read number of faces: " << face_count << endl;
 
     // Main loop of parsing vertices
     while (--vertex_count >= 0) {
@@ -133,7 +155,23 @@ bool loadPLY(const char * path, std::vector<Vector3D> & out_vertices) {
         temp_vertices.push_back(vertex);
     }
 
+    // // Main loop of parsing faces
+    // while (--face_count >= 0) {
+    //     Polygon polygon;
+    //     Index idx0, idx1, idx2;
+    //     float dummy0;
+    //
+    //     //NOTE: uncomment one based on the format of the ply file
+    //     // fscanf(file, "%lf %lf %lf %f %f\n", &vertex.x, &vertex.y, &vertex.z , &dummy0, &dummy1);
+    //     fscanf(file, "%f %lu %lu %lu \n", &dummy0, &idx0, &idx1, &idx2);
+    //     polygon.vertex_indices.push_back(idx0);
+    //     polygon.vertex_indices.push_back(idx1);
+    //     polygon.vertex_indices.push_back(idx2);
+    //     temp_polygons.push_back(polygon);
+    // }
+
     out_vertices = temp_vertices;
+    out_polygons = temp_polygons;
     return true;
 }
 

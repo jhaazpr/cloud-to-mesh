@@ -1,0 +1,379 @@
+/*  Syntax Quick Reference
+  --------------------------
+  column($ratios: 1, $offset: 0, $cycle: 0, $uncycle: 0, $gutter: $jeet-gutter)
+  span($ratio: 1, $offset: 0)
+  shift($ratios: 0, $col_or_span: column, $gutter: $jeet-gutter)
+  unshift()
+  edit()
+  center($max_width: 1410px, $pad: 0)
+  stack($pad: 0, $align: false)
+  unstack()
+  align($direction: both)
+  cf()
+*/
+/**
+ * Grid settings.
+ * All values are defaults and can therefore be easily overidden.
+ */
+/**
+ * List functions courtesy of the wonderful folks at Team Sass.
+ * Check out their awesome grid: Singularity.
+ */
+/**
+ * Get  percentage from a given ratio.
+ * @param {number} [$ratio=1] - The column ratio of the element.
+ * @returns {number} - The percentage value.
+ */
+/**
+ * Work out the column widths based on the ratio and gutter sizes.
+ * @param {number} [$ratios=1] - The column ratio of the element.
+ * @param {number} [$gutter=$jeet-gutter] - The gutter for the column.
+ * @returns {list} $width $gutter - A list containing the with and gutter for the element.
+ */
+/**
+ * Get the set layout direction for the project.
+ * @returns {string} $direction - The layout direction.
+ */
+/**
+ * Replace a specified list value with a new value (uses built in set-nth() if available)
+ * @param {list} $list - The list of values you want to alter.
+ * @param {number} $index - The index of the list item you want to replace.
+ * @param {*} $value - The value you want to replace $index with.
+ * @returns {list} $list - The list with the value replaced or removed.
+ * @warn if an invalid index is supplied.
+ */
+/**
+ * Reverse a list (progressively enhanced for Sass 3.3)
+ * @param {list} $list - The list of values you want to reverse.
+ * @returns {list} $result - The reversed list.
+ */
+/**
+ * Get the opposite direction to a given value.
+ * @param {string} $dir - The direction you want the opposite of.
+ * @returns {string} - The opposite direction to $dir.
+ * @warn if an incorrect string is provided.
+ */
+/**
+ * Style an element as a column with a gutter.
+ * @param {number} [$ratios=1] - A width relative to its container as a fraction.
+ * @param {number} [$offset=0] - A offset specified as a fraction (see $ratios).
+ * @param {number} [$cycle=0] - Easily create an nth column grid where $cycle equals the number of columns.
+ * @param {number} [$uncycle=0] - Undo a previous cycle value to allow for a new one.
+ * @param {number} [$gutter=$jeet-gutter] - Specify the gutter width as a percentage of the containers width.
+ */
+/**
+ * An alias for the column mixin.
+ * @param [$args...] - All arguments get passed through to column().
+ */
+/**
+ * Get the width of a column and nothing else.
+ * @param {number} [$ratios=1] - A width relative to its container as a fraction.
+ * @param {number} [$gutter=$jeet-gutter] - Specify the gutter width as a percentage of the containers width.
+ */
+/**
+ * Get the gutter size of a column and nothing else.
+ * @param {number} [ratios=1] - A width relative to its container as a fraction.
+ * @param {number} [gutter=jeet.gutter] - Specify the gutter width as a percentage of the containers width.
+ */
+/**
+ * An alias for the column-width function.
+ * @param [$args...] - All arguments get passed through to column().
+ */
+/**
+ * An alias for the column-gutter function.
+ * @param [$args...] - All arguments get passed through to column().
+ */
+/**
+ * Style an element as a column without any gutters for a seamless row.
+ * @param {number} [$ratios=1] - A width relative to its container as a fraction.
+ * @param {number} [$offset=0] - A offset specified as a fraction (see $ratios).
+ * @param {number} [cycle=0] - Easily create an nth column grid where cycle equals the number of columns.
+ * @param {number} [uncycle=0] - Undo a previous cycle value to allow for a new one.
+ */
+/**
+ * Reorder columns without altering the HTML.
+ * @param {number} [$ratios=0] - Specify how far along you want the element to move.
+ * @param {string} [$col-or-span=column] - Specify whether the element has a gutter or not.
+ * @param {number} [$gutter=$jeet-gutter] - Specify the gutter width as a percentage of the containers width.
+ */
+/**
+ * Reset an element that has had shift() applied to it.
+ */
+/**
+ * View the grid and its layers for easy debugging.
+ * @param {string} [$color=black] - The background tint applied.
+ * @param {boolean} [$important=false] - Whether to apply the style as !important.
+ */
+/**
+ *  Alias for edit().
+ */
+/**
+ * Horizontally center an element.
+ * @param {number} [$max-width=1410px] - The max width the element can be.
+ * @param {number} [$pad=0] - Specify the element's left and right padding.
+ */
+/**
+ * Uncenter an element.
+ */
+/**
+ * Stack an element so that nothing is either side of it.
+ * @param {number} [$pad=0] - Specify the element's left and right padding.
+ * @param {boolean/string} [$align=false] - Specify the text align for the element.
+ */
+/**
+ * Unstack an element.
+ */
+/**
+ * Center an element on either or both axes.
+ * @requires A parent container with relative positioning.
+ * @param {string} [$direction=both] - Specify which axes to center the element on.
+ */
+/**
+ * Apply a clearfix to an element.
+ */
+@keyframes fadein {
+  from {
+    opacity: 0; }
+
+  to {
+    opacity: 1; } }
+
+/* Firefox < 16 */
+@-moz-keyframes fadein {
+  from {
+    opacity: 0; }
+
+  to {
+    opacity: 1; } }
+
+/* Safari, Chrome and Opera > 12.1 */
+@-webkit-keyframes fadein {
+  from {
+    opacity: 0; }
+
+  to {
+    opacity: 1; } }
+
+/* Internet Explorer */
+@-ms-keyframes fadein {
+  from {
+    opacity: 0; }
+
+  to {
+    opacity: 1; } }
+
+/* Opera < 12.1 */
+@-o-keyframes fadein {
+  from {
+    opacity: 0; }
+
+  to {
+    opacity: 1; } }
+
+/* Variables */
+/* Media Queries */
+@media only screen and (max-width: 600px) {
+  .content, .main, .work {
+    display: block;
+    clear: both;
+    float: none;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto; }
+    .content:first-child, .main:first-child, .work:first-child {
+      margin-left: auto; }
+    .content:last-child, .main:last-child, .work:last-child {
+      margin-right: auto; } }
+/* Global Styles */
+* {
+  font-family: 'Source Code Pro', 'Helvetica Neue', sans-serif;
+  margin: 0px; }
+
+@media only screen and (max-width: 600px) {
+  html article {
+    display: block;
+    clear: both;
+    float: none;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto; }
+    html article:first-child {
+      margin-left: auto; }
+    html article:last-child {
+      margin-right: auto; } }
+
+body {
+  margin: 0px;
+  height: 100%;
+  width: 100%; }
+
+strong {
+  font-weight: 800;
+  color: black; }
+
+a {
+  text-decoration: none;
+  color: inherit;
+  border-bottom: 1px solid transparent;
+  transition: border-bottom 0.25s ease-out;
+  transition: color 0.25s ease-out; }
+  a:hover {
+    border-bottom: 1px solid black;
+    color: black; }
+
+/* Main styles */
+.top {
+  height: 100px;
+  width: 100%; }
+  .top nav li {
+    font-size: 12px;
+    display: inline-block; }
+  .top .logo {
+    font-weight: 800;
+    font-size: 20px;
+    margin-top: 40px;
+    margin-left: 40px;
+    margin-bottom: 5px; }
+
+.container {
+  height: 100%;
+  margin-left: 15%;
+  margin-right: 15%;
+  margin-bottom: 3.75%;
+  margin-top: 0;
+  -webkit-animation: fadein 1.5s;
+  /* Safari, Chrome and Opera > 12.1 */
+  -moz-animation: fadein 1.5s;
+  /* Firefox < 16 */
+  -ms-animation: fadein 1.5s;
+  /* Internet Explorer */
+  -o-animation: fadein 1.5s;
+  /* Opera < 12.1 */
+  animation: fadein 1.5s; }
+
+.content article .image img, .main article .image img, .work article .image img, .work article .subimage img {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  box-shadow: 0px 0px 10px transparent;
+  transition: box-shadow 0.25s ease-out; }
+.content article .image a:hover, .main article .image a:hover, .work article .image a:hover, .work article .subimage a:hover {
+  border-bottom: 1px solid transparent; }
+.content article .title, .main article .title, .work article .title {
+  margin-top: 20px;
+  margin-bottom: 20px;
+  font-weight: 800; }
+.content article .text, .main article .text, .work article .text, .work article .tagline {
+  margin-top: 80px;
+  margin-bottom: 80px;
+  color: #7e7e7e;
+  font-size: 14px;
+  line-height: 2; }
+  .content article .text a, .main article .text a, .work article .text a, .work article .tagline a {
+    cursor: pointer; }
+
+.main article {
+  *zoom: 1;
+  float: left;
+  clear: none;
+  text-align: inherit;
+  width: 48.5%;
+  margin-left: 0%;
+  margin-right: 3%; }
+  .main article:before, .main article:after {
+    content: '';
+    display: table; }
+  .main article:after {
+    clear: both; }
+  .main article:last-child {
+    margin-right: 0%; }
+
+.works article {
+  *zoom: 1;
+  float: left;
+  clear: none;
+  text-align: inherit;
+  width: 31.33333%;
+  margin-left: 0%;
+  margin-right: 3%; }
+  .works article:before, .works article:after {
+    content: '';
+    display: table; }
+  .works article:after {
+    clear: both; }
+  .works article:nth-of-type(3n) {
+    margin-right: 0%;
+    float: right; }
+  .works article:nth-of-type(3n + 1) {
+    clear: both; }
+  .works article .text, .works .work article .tagline, .work .works article .tagline {
+    margin-top: 0;
+    margin-bottom: 40px;
+    color: #7e7e7e;
+    font-size: 14px;
+    line-height: 2; }
+
+.work {
+  *zoom: 1;
+  width: auto;
+  max-width: 720px;
+  float: none;
+  display: block;
+  margin-right: auto;
+  margin-left: auto;
+  padding-left: 0;
+  padding-right: 0; }
+  .work:before, .work:after {
+    content: '';
+    display: table; }
+  .work:after {
+    clear: both; }
+  .work article .text, .work article .tagline {
+    margin-top: 20px;
+    margin-bottom: 20px; }
+    .work article .text a, .work article .tagline a {
+      text-decoration: none;
+      color: black;
+      border-bottom: 1px solid transparent; }
+      .work article .text a:hover, .work article .tagline a:hover {
+        border-bottom: 1px solid black;
+        color: black; }
+  .work article .title {
+    font-size: 56px;
+    margin-bottom: 5px; }
+  .work article .tagline {
+    margin-top: 0;
+    margin-bottom: 5px; }
+  .work article nav ul {
+    padding-left: 0;
+    margin-bottom: 40px; }
+  .work article nav li {
+    font-size: 12px;
+    font-style: italic;
+    font-weight: bold;
+    display: inline-block; }
+  .work article .header {
+    font-size: 21px;
+    font-weight: bold; }
+  .work article .subimage {
+    margin-top: 26.66667px; }
+  .work article .equation img {
+    *zoom: 1;
+    width: auto;
+    max-width: 1410px;
+    float: none;
+    display: block;
+    margin-right: auto;
+    margin-left: auto;
+    padding-left: 0;
+    padding-right: 0; }
+    .work article .equation img:before, .work article .equation img:after {
+      content: '';
+      display: table; }
+    .work article .equation img:after {
+      clear: both; }
+
+.bottom {
+  height: 100px;
+  width: 100%;
+  bottom: 0px; }

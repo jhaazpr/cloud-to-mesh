@@ -1,0 +1,270 @@
+@import '../jeet/index';
+
+// @include edit();
+
+@keyframes fadein {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+/* Firefox < 16 */
+@-moz-keyframes fadein {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+/* Safari, Chrome and Opera > 12.1 */
+@-webkit-keyframes fadein {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+/* Internet Explorer */
+@-ms-keyframes fadein {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+/* Opera < 12.1 */
+@-o-keyframes fadein {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+@mixin fade-in() {
+  -webkit-animation: fadein 1.5s; /* Safari, Chrome and Opera > 12.1 */
+     -moz-animation: fadein 1.5s; /* Firefox < 16 */
+      -ms-animation: fadein 1.5s; /* Internet Explorer */
+       -o-animation: fadein 1.5s; /* Opera < 12.1 */
+          animation: fadein 1.5s;
+}
+
+/* Variables */
+
+$topHeight: 100px;
+$baseContainerMargin: 15%;
+$titleMargin: 20px;
+$textMargin: 80px;
+
+$workWidth: 720px;
+
+$grey: #7e7e7e;
+$black: #000000;
+
+$textSize: 14px;
+$textLineHeight: 2;
+
+$break-phone: "only screen and (max-width : 600px)";
+
+/* Media Queries */
+
+@media #{$break-phone} {
+  .content {
+    @include stack();
+  }
+}
+
+/* Global Styles */
+
+* {
+  font-family: 'Source Code Pro', 'Helvetica Neue', sans-serif;
+  margin: 0px;
+}
+
+html {
+  @media #{$break-phone} {
+    article {
+      @include stack();
+    }
+  }
+}
+
+body {
+  margin: 0px;
+  height: 100%;
+  width: 100%;
+}
+
+strong {
+  font-weight: 800;
+  color: $black;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+  border-bottom: 1px solid transparent;
+  transition: border-bottom 0.25s ease-out;
+  transition: color 0.25s ease-out;
+
+  &:hover {
+    border-bottom: 1px solid $black;
+    color: $black;
+  }
+}
+
+
+/* Main styles */
+
+.top {
+  height: $topHeight;
+  width: 100%;
+
+  nav li {
+    font-size: 12px;
+    display: inline-block;
+  }
+
+  .logo {
+    font-weight: 800;
+    font-size: 20px;
+    margin-top: 40px;
+    margin-left: 40px;
+    margin-bottom: 5px;
+  }
+}
+
+.container {
+  height: 100%;
+  margin-left: $baseContainerMargin;
+  margin-right: $baseContainerMargin;
+  margin-bottom: $baseContainerMargin / 4;
+  margin-top: 0;
+  @include fade-in();
+}
+
+.content {
+
+  article {
+    .image {
+
+      img {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        box-shadow: 0px 0px 10px transparent;
+        transition: box-shadow 0.25s ease-out;
+        // &:hover {
+        //   box-shadow: 0px 0px 10px $grey;
+        // }
+      }
+
+      a:hover {
+        // Override link hover underlining
+        border-bottom: 1px solid transparent;
+      }
+    }
+
+    .title {
+      margin-top: $titleMargin;
+      margin-bottom: $titleMargin;
+      font-weight: 800;
+    }
+
+    .text {
+      margin-top: $textMargin;
+      margin-bottom: $textMargin;
+      color: $grey;
+      font-size: $textSize;
+      line-height: $textLineHeight;
+
+      a {
+        cursor: pointer;
+      }
+    }
+  }
+}
+
+.main {
+  @extend .content;
+  article {
+    @include col(1/2);
+  }
+}
+
+.works {
+  article {
+    @include col(1/3, $cycle: 3);
+
+    .text {
+      margin-top: 0;
+      margin-bottom: $textMargin / 2;
+      color: $grey;
+      font-size: $textSize;
+      line-height: $textLineHeight;
+    }
+  }
+}
+
+.work {
+  @extend .content;
+
+  // @include col(2/3);
+  @include center(720px);
+
+  article {
+
+    .text {
+      margin-top: ($textMargin / 4);
+      margin-bottom: ($textMargin / 4);
+
+      a {
+        text-decoration: none;
+        color: $black;
+        border-bottom: 1px solid transparent;
+
+        &:hover {
+          border-bottom: 1px solid $black;
+          color: $black;
+        }
+      }
+
+    }
+
+    .title {
+      font-size: $textSize * 4;
+      margin-bottom: $textMargin / 16;
+    }
+
+    .tagline {
+      @extend .text;
+      margin-top: 0;
+      margin-bottom: $textMargin / 16;
+    }
+
+    nav {
+      ul {
+        padding-left: 0;
+        margin-bottom: $textMargin / 2;
+      }
+      li {
+        font-size: 12px;
+        font-style: italic;
+        font-weight: bold;
+        display: inline-block;
+      }
+    }
+
+    .header {
+      font-size: $textSize * 1.5;
+      font-weight: bold;
+    }
+
+    .subimage {
+      @extend .image;
+      margin-top: $textMargin / 3;
+    }
+
+    .equation {
+      img {
+        @include center();
+      }
+    }
+  }
+}
+
+.bottom {
+  height: $topHeight;
+  width: 100%;
+  bottom: 0px;
+}

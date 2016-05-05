@@ -41,6 +41,10 @@ namespace CGL {
       BPAEdge* next_edge;
       BPALoop* my_loop;
 
+      /**
+      *
+      */
+      std::vector<Index> find_candidate_points(double rho, Vector3D m, std::vector<Vector3D> vertices);
 
       /**
        * If other_edge utilizes the same points, as this edge does,

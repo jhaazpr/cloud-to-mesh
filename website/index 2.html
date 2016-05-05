@@ -1,0 +1,486 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<link rel="icon"
+      type="image/png"
+      href="assets/favicon.png">
+<title>GeoMenagerie</title>
+<link href="css/style.css" rel="stylesheet">
+<link href="css/prism.css" rel="stylesheet">
+<link href='http://fonts.googleapis.com/css?family=Source+Code+Pro:400,700' rel='stylesheet' type='text/css'>
+<script src="js/prism.js"></script>
+</head>
+<body>
+  <div class="top">
+  <div class="logo"></div>
+  </div>
+  <div class="container">
+    <div class="work">
+      <article class="project">
+        <section class="image"><img src="./images/p5b-s1024.png"></section>
+        <section class="title">HW 3: PathTracer</section>
+        <section class="tagline">
+          Third homework for UC Berkeley's CS184: Introduction to Computer Graphics.
+        </section>
+        <nav>
+          <ul>
+            <li><a href="http://jasperoleary.com/cs184hw2">Jasper O'Leary</a></li>
+          </ul>
+        </nav>
+        <section class="header">
+          Overview
+        </section>
+        <section class="text">
+          In this assignment, we write a ray tracer that samples rays of light and traces
+          them throughout a scene to create an image with physically-accurate lighting.
+          We build the ray tracer in five steps:
+          <ul>
+            <li>Generating rays which we "shoot" through pixels in the image and trace around the scene</li>
+            <li>Organizing primatives in the scene into an efficient hierarchy for testing intersections</li>
+            <li>Calculating the light at a traced point due to direct light sources or shadows</li>
+            <li>Calculating the light falling on the point from other directions </li>
+            <li>Implementing new material surfaces using new BSDFs (explained in part 5)</li>
+          </ul>
+        </section>
+        <section class="header">
+          Part 1: Ray Generation and Scene Intersection
+        </section>
+        <section class="text">
+        </section>
+        <section class="text">
+          The fundamental mechanism driving a ray tracer is ray generation, where we loop
+          through all the pixels in the output image, generate random rays originating from a pixel's location,
+          and trace the rays throghout the scene backwards from the rays' passing through the pixel back until
+          its origination from a light source or until we decide otherwise (more about this in part 4).
+        </section>
+        <section class="subimage"><img src="./images/p1-sl1.jpg"></section>
+        <section class="text">
+          To generate rays, we use the following algorithm per pixel, shown in pseudocode:
+        </section>
+        <pre>
+        <code class="language-clike">
+        Spectrum PathTracer::raytrace_pixel(size_t x, size_t y) {
+          for (int i = 0; i < num_samples; i++) {
+              random = generate random point in the pixel (x, y)
+              ray = ray beginning at random
+              ray.depth = max_ray_depth;
+              total_spectrum += trace_ray(ray, true);
+          }
+          return total_spectrum;
+        }
+        </code>
+        </pre>
+        <section class="text">
+          Running ray generation for each pixel, we color each pixel according to the how its
+          rays intersect material. For diffuse-spheres, we get this result:
+        </section>
+        <section class="subimage"><img src="./images/p1-1.png"></section>
+        <section class="text">
+          When tracing a ray, for each bounce, we check whether the ray intersects <em>primatives</em>, here
+          either a sphere or a triangle. To check whether a ray intersects a triangle, I implemented the
+          <strong>M&ouml;ller-Trumbore algorithm</strong>, shown on the lecture slide below:
+        </section>
+        <section class="subimage"><img src="./images/p1-sl2.jpg"></section>
+        <section class="text">
+          How does the M&ouml;ller-Trumbore algorithm work? Essentially, we write the ray as a parametric
+          equation with origin O plus some multiple t of a direction vector D. This equation gives us a
+          point along the ray. This same point can also be written in barycentric coordinates, where that same
+          point is written as a linear interpretation of the triangle's points P_0, P_1, P_2.
+
+          Setting the ray equation and the barycentric coordinates equal, we have:
+        </section>
+        <section class="equation"><img src="./images/p1-eq1.png"></section>
+        <section class="text">
+          Then, the M&ouml;ller-Trumbore algorithm solves matrix equation using
+          <a href="https://en.wikipedia.org/wiki/Cramer%27s_rule">Cramer's rule</a>.
+          Briefly, Cramer's rule says that we can solve for each x_i in matrix
+          equations of the form Ax = b by calculating the following:
+        </section>
+        <section class="equation"><img src="./images/p1-eq3.png"></section>
+        <section class="text">
+          Thus we solve for the ray parameter t, and the barycentric coordinates b_1 and b_2
+          (from whence we can calculate b_0 since b_0 = 1 - b_1 - b_2). It then suffices
+          to check that all barycentric coordinates are valid (i.e. greater than 0) and that
+          the calculated ray parameter t is within the valid range for the ray.
+        </section>
+        <section class="text">
+          Below is another image rendered with simple ray tracing:
+        </section>
+        <section class="subimage"><img src="./images/p1-2.png"></section>
+        <section class="text">
+        </section>
+
+
+        <section class="header">
+          Part 2: Bounding Volume Hierarchy
+        </section>
+        <section class="text">
+        </section>
+        <section class="text">
+          Checking for ray intersections for every single primitive is quite inefficient,
+          since rays will typically only intersect with zero or one primitives. To deal with this fact,
+          we use a <strong>bounding volume hierarchy</strong> aka a <strong>BVH</strong> which
+          splits up the objects in a scene using a tree data structure. The nodes of this tree are the left
+          and right splits of a given bounding box.
+          <br/><br/>
+          Now, we check whether rays
+          intersect a <em>bounding box</em> first, and if so, only then do we check for intersections
+          within the subsections of the bounding box. Note that when we split a bounding box, we
+          split based on the <strong>largest axis</strong> because we want to minimize the depth of tree.
+          By splitting on the largest axis, because this is a binary tree, we have to a tree of depth
+          log_2 (n) for n primitives. This is the shallowest possible depth for a binary tree.
+
+          The process of constructing a BVH is shown below:
+        </section>
+        <pre>
+        <code class="language-clike">
+          BVHNode *BVHAccel::construct_bvh(const std::vector<Primitive*>& prims, size_t max_leaf_size) {
+            BBox centroid_box, bbox;
+
+            inflate the volume with primitives
+
+            BVHNode *node = new BVHNode(bbox);
+            // In a leaf node, fill the bbox with primitives
+            if (prims.size() <= max_leaf_size) {
+              node->prims = new vector<Primitive *>(prims);
+              node->l = NULL;
+              node->r = NULL;
+              return node;
+            } else {
+              // Pick largest axis to split
+              int split_axis = largest axis
+              Vector3D midpoint = bbox.min + 0.5 * bbox.extent;
+
+              // Split on the max axis depending on the prim's
+              // bounding box's centroid
+              std::vector<Primitive *> left_prims;
+              std::vector<Primitive *> right_prims;
+              for (Primitive *p : prims) {
+                if (p->get_bbox().centroid()[split_axis] < midpoint[split_axis]) {
+                  left_prims.push_back(p);
+                } else {
+                  right_prims.push_back(p);
+                }
+              }
+
+              // If either split is empty, split arbitrarily instead
+              if (left_prims.empty() || right_prims.empty()) {
+                  _left_prims = first half of primitives
+                  _right_prims = second half of primitives
+                  node->l = construct_bvh(_left_prims, max_leaf_size);
+                  node->r = construct_bvh(_right_prims, max_leaf_size);
+              } else {
+                node->l = construct_bvh(left_prims, max_leaf_size);
+                node->r = construct_bvh(right_prims, max_leaf_size);
+              }
+              return node;
+            }
+        </code>
+        </pre>
+        <section class="text">
+          Here is the BVH in the editor. The red box represents
+          the current bounding box, and each bounding box (besides leaf boxes) have
+          two children based on splitting the longest axis:
+        </section>
+        <section class="subimage"><img src="./images/p2-bvh4.png"></section>
+        <section class="text">
+          Now, to test for ray intersections, we test a ray on the BVH tree as follows:
+        </section>
+        <pre>
+        <code class="language-clike">
+          bool BVHAccel::intersect(const Ray& ray, Intersection* i, BVHNode *node) const {
+            if (ray doesn't intersect node->bbox) {
+              return false;
+            }
+
+            if (node->isLeaf()) {
+              return true if ray intersects at least one primitive
+            }
+
+            bool hit_left, hit_right;
+            hit_left = this->intersect(ray, i, node->l);
+            hit_right = this->intersect(ray, i, node->r);
+            return hit_left || hit_right;
+          }
+        </code>
+        </pre>
+        <section class="text">
+          Using a BVH tree, we can render scenes with a large number of n primitives
+          in O(log n) time instead of in O(n) time:
+        </section>
+        <section class="subimage"><img src="./images/p2-3.png"></section>
+        <section class="subimage"><img src="./images/p2-4.png"></section>
+
+
+        <section class="text">
+        </section>
+        <section class="header">
+          Part 3: Direct Illumination
+        </section>
+        <section class="text">
+        </section>
+        <section class="text">
+          For direct lighting, we're interested in shading pixel based on how
+          the currently-traced ray bounces off a surface towards a light source, or
+          how the ray gets intercepted from the light source and instead creates a
+          shadow. We can calculate this phenomenon using the <strong>reflection equation</strong>:
+        </section>
+        <section class="equation"><img src="./images/p3-eq1.png"></section>
+        <section class="text">
+          This equation has a lot of terms:
+          <ul>
+            <li><strong>L_r term</strong>: the radiance at point p in the direction of omega_o, the ray coming towards the camera</li>
+            <li><strong>f_r term</strong>: a ratio of how much light is reflected in the outgoing ray omega_o from the incoming direction
+                                          omega_i. This is called the BSDF.</li>
+            <li><strong>L_i term</strong>: the radiance at point p from a light source. This is calculated with a shadow ray in the pseudocode</li>
+            <li><strong>cos(theta_i)</strong>: changes the radiance L_i into irradiance for multiplying with the the BSDF</li>
+          </ul>
+        </section>
+        <section class="text">
+          Instead of integrating directly over the entire hemisphere H^2 around the point,
+          we approximate the integral using
+          <a href="https://en.wikipedia.org/wiki/Monte_Carlo_integration">Monte Carlo Integration</a>
+          over N points sampled from the hemisphere. Note that in the pseudocode below, N is
+          <code>ns_area_lights</code>. Also, p(omega_i) is obtained as the <code>pdf</code>variable
+          passed into the <code>sample_L()</code> function which obtains a sample incoming direction (towards the light):
+        </section>
+        <section class="equation"><img src="./images/p3-eq2.png"></section>
+        <section class="text">
+          Given the equation, the function for estimating direct lighting essentially writes
+          itself (minus all the bugs):
+        </section>
+        <pre>
+        <code class="language-clike">
+          Spectrum PathTracer::estimate_direct_lighting(const Ray& r, const Intersection& isect) {
+            Vector3D hit_p = point where ray strikes a primitive
+            Vector3D w_out = vector pointing towards source of ray
+                              (e.g. camera if primary ray)
+            Vector3D w_in = vector pointing towards next "bounce"
+            Vector3D wi = w_in in world coordinates
+
+            // Loop over every scene light
+            for (SceneLight *scene_light : scene->lights) {
+              if (scene_light->is_delta_light()) {
+                // sample once from light
+                L_in = scene_light->sample_L(hit_p, &wi, &distToLight, &pdf);
+
+                // Don't calculate radiance if ray hits behind surface
+                if (w_in.z >= 0) {
+                  Ray shadow_ray = Ray(hit_p + (EPS_D * wi), wi.unit());
+                  shadow_ray.max_t = distToLight;
+                  if (bvh->intersect(shadow_ray, &_isect)) {
+                    add pure black to L_out
+                  } else {
+                    bsdf_samp = isect.primitive->get_bsdf();
+                    L_out += bsdf_samp->f(w_out, w_in) * (L_in * w_in.z);
+                  }
+                }
+              } else {
+                // sample ns_area_light times
+                for (int i = 0; i < ns_area_light; i++) {
+                  calculate ray in the same manner as above and add to running average
+                }
+                L_out += (1.0 / ns_area_light) * L_samp;
+              }
+            }
+            return L_out;
+          }
+        </code>
+        </pre>
+        <section class="text">
+          Here are the spheres rendered with direct lighting only:
+        </section>
+        <section class="subimage"><img src="./images/p3-spheres.png"></section>
+        <section class="text">
+          Let's turn our attention to the shadows caused by direct lighting. Here are
+          renderings with 1, 4, and 16 area lights. Note the decreased noise in the shadows
+          when more lights are used.
+        </section>
+        <section class="subimage"><img src="./images/p3-l1.png"></section>
+        <section class="subimage"><img src="./images/p3-l8.png"></section>
+        <section class="subimage"><img src="./images/p3-l16.png"></section>
+
+
+
+        <section class="text">
+        </section>
+        <section class="header">
+          Part 4: Indirect Illumination
+        </section>
+        <section class="text">
+        </section>
+        <section class="text">
+          Now we want to add indirect lighting to our direct lighting. Indirect lighting
+          refers to illumination that bounces in directions other than directly towards
+          a source light. Because we are now tracing rays that are bouncing off other
+          primitives in the scene, we will call <code>trace_ray()</code> recursively and
+          terminate rays when either: a) they've rearched a maximum bounce depth as specified at
+          the beginning of the rendering task, or b) we terminate the ray using
+          <a href="http://cs184.eecs.berkeley.edu/cs184_sp16/lecture/global-illumination/slide_060">russian roulette sampling</a>.
+          Russian roulette sampling is used because it provides an <em>unbiased</em> estimator, meaning
+          that if we let rays bounce all the way, the russian roulette would have the same expected
+          value for the radiance.
+        </section>
+        <section class="text">
+          Similar to direct lighting, the equation for indirect lighting is:
+        </section>
+        <section class="equation"><img src="./images/p4-eq1.png"></section>
+        <section class="text">
+          What changed from the direct lighting estimator?
+          <ul>
+            <li><strong>L_oi term</strong>: the radiance at point p in the direction of omega_o, which is now a ray coming from
+                                            a sampled direction, instead of necessarily from a light source's direction</li>
+            <li><strong>tr() term</strong>: refers to the first intersection of outgoing ray omega_j on point p</li>
+          </ul>
+        </section>
+        <section class="text">
+          Again, the implementation closely follows the formula. Note the recursive call to
+          <code>trace_ray()</code> which represents the L_oi term:
+        </section>
+        <pre>
+        <code class="language-clike">
+          Spectrum PathTracer::estimate_indirect_lighting(const Ray& r, const Intersection& isect) {
+            Vector3D hit_p = point where ray strikes a primitive
+            Vector3D w_out = vector pointing towards source of ray
+                              (e.g. camera if primary ray)
+            Vector3D w_in = vector pointing towards next "bounce", which
+                            will be sampled from a PDF
+            Vector3D wi = w_in in world coordinates
+
+            // Sample surface BSDF
+            Spectrum samp_bsdf = isect.bsdf->sample_f(w_out, &w_in, &pdf);
+            double illum_l_out = samp_bsdf.illum() * 10.0;
+            double prob_continue = clamp(illum_l_out, 0.0, 1.0);
+
+            // Russian roulette: chance we will not terminate
+            if (coin_flip(prob_continue)) {
+                Ray ray_bounce = Ray(hit_p + EPS_D * wi, wi);
+                ray_bounce.depth = r.depth - 1;
+                L_in = trace_ray(ray_bounce, isect.bsdf->is_delta());
+                L_out = (samp_bsdf * abs_cos_theta(w_in) * L_in)
+                          / (pdf * (prob_continue));
+            }
+            return L_out;
+          }
+        </code>
+        </pre>
+        <section class="text">
+          Here are the spheres rendered with global (direct and indirect) illumination:
+        </section>
+        <section class="subimage"><img src="./images/p4-global.png"></section>
+        <section class="text">
+          Now we compare a scene rendered with only direct lighting (first) and
+          only indirect lighting (second):
+        </section>
+        <section class="subimage"><img src="./images/p4-direct.png"></section>
+        <section class="subimage"><img src="./images/p4-indirect.png"></section>
+        <section class="text">
+          Recall that we always terminate the indirect rays after <code>max_ray_depth</code>
+          bounces. Here is the same scene rendered with <code>max_ray_depth</code> set at
+          1, 4, and 8, respectively.
+        </section>
+        <section class="subimage"><img src="./images/p4-m1.png"></section>
+        <section class="subimage"><img src="./images/p4-m4.png"></section>
+        <section class="subimage"><img src="./images/p4-m8.png"></section>
+        <section class="text">
+          Finally, we render a scene with a bunny, taking 1, 16, 128, and 1024 samples
+          per pixel:
+        </section>
+        <section class="subimage"><img src="./images/p4-s1.png"></section>
+        <section class="subimage"><img src="./images/p4-s16.png"></section>
+        <section class="subimage"><img src="./images/p4-s128.png"></section>
+        <section class="subimage"><img src="./images/p4-s1024.png"></section>
+
+
+
+        <section class="text">
+        </section>
+        <section class="header">
+          Part 5: Materials
+        </section>
+        <section class="text">
+        </section>
+        <section class="text">
+          Finally, we focus on modifying the BSDFs that we use for illumination.
+          Recall, that a BSDF is the ratio of how much light is reflected in an
+          outgoing direction given an incoming ray direction, and thus, the BSDF defines
+          the material qualities of a surface. For now, we focus on two types of surfaces:
+          a purely reflective surface, and a glass surface. To implement these BSDFs, we
+          first implement helper functions for <em>reflecting</em> rays and for
+          <em>refracting</em> rays. Each helper function calculates an outgoing vector
+          from an incoming one.
+        </section>
+        <section class="text">
+          <strong>Reflecting rays</strong>: I used the reflection equation:
+        </section>
+        <section class="equation"><img src="./images/p5-eq1.png"></section>
+        <section class="text">
+          where:
+          <ul>
+            <li><strong>omega_o</strong>: is the ray pointing towards the light source from the intersection</li>
+            <li><strong>n</strong>: is the normal vector from the surface</li>
+          </ul>
+        </section>
+
+        <section class="text">
+          <strong>Refracting rays</strong>:  I used a derivation from
+          <a href="https://en.wikipedia.org/wiki/Snell%27s_law#Vector_form">Snell's Law</a>
+          found on Wikipedia:
+        </section>
+        <section class="equation"><img src="./images/p5-eq2.png"></section>
+        <section class="text">
+          where:
+          <ul>
+            <li><strong>r</strong>: is the ratio of the the materials' indices of refraction:
+            n_o / n_i</li>
+            <li><strong>l</strong>: is -omega_o, which is the ray pointing from the light source into the intersection</li>
+            <li><strong>c</strong>: is -n dot l, a coefficient with no special significance</li>
+            <li><strong>n</strong>: is the normal vector from the surface</li>
+          </ul>
+        </section>
+
+        <section class="text">
+          <strong>Mirror Surface BSDF</strong>: this BSDF is straightforward: we simply
+           reflect any incoming ray and return the <em>reflectance</em> of the material
+           divided by a cosine factor (the dot product of the incoming ray and the
+           surface normal).
+        </section>
+        <section class="text">
+          <strong>Glass Surface BSDF</strong>:  glass surfaces use both refraction
+          and reflection. I followed the algorithm below to calculate the BSDF:
+        </section>
+
+        <section class="text">
+          Below are renderings of a scene with two spheres. The left sphere has a mirror
+          surface and the right sphere has a glass surface, so each sphere will use its
+          respective BSDF while rendering. Immediately below are six renderings, each with
+          <code>max_ray_depth</code>: 0, 1, 2, 4, 16, and 128, respectively. Note that,
+          with the samples per pixels constant, the noise of the image increases as we
+          increase the number of bounces.
+        </section>
+        <section class="subimage"><img src="./images/p5a-d0.png"></section>
+        <section class="subimage"><img src="./images/p5a-d1.png"></section>
+        <section class="subimage"><img src="./images/p5a-d2.png"></section>
+        <section class="subimage"><img src="./images/p5a-d4.png"></section>
+        <section class="subimage"><img src="./images/p5a-d16.png"></section>
+        <section class="subimage"><img src="./images/p5a-d128.png"></section>
+
+        <section class="text">
+          Finally, below are rendering of the same scene with <code>max_ray_depth</code>
+          set at 100 and number of samples per pixel set at: 1, 4, 16, 64, 512, 1024.
+          Fun fact: the last rendering took 1hr35min to render on an instructional machine,
+          and all we see is a tiny bit less noise.
+        </section>
+        <section class="subimage"><img src="./images/p5b-s1.png"></section>
+        <section class="subimage"><img src="./images/p5b-s4.png"></section>
+        <section class="subimage"><img src="./images/p5b-s16.png"></section>
+        <section class="subimage"><img src="./images/p5b-s64.png"></section>
+        <section class="subimage"><img src="./images/p5b-s512.png"></section>
+        <section class="subimage"><img src="./images/p5b-s1024.png"></section>
+
+      </article>
+    </div>
+  </div>
+  <div class="bottom"></div>
+</body>
+</html>

@@ -32,7 +32,7 @@ namespace CGL {
       bool success = this->find_seed_triangle(&triangle_indices, rho);
       if (success) {
         printf("seed triangle found\n");
-        BPAEdge *active_edge;
+        BPAEdge *active_edge = new BPAEdge();
         cout << active_edge->my_loop << endl;
         success = this->get_active_edge(active_edge);
         if (success) {
@@ -52,9 +52,11 @@ namespace CGL {
           // for(bool i : this->vertices_used){
           //   cout << i << endl;
           // }
-          if (success) {
+          cout << "next index is: " << next_index << endl;
+          cout << "on front? " << this->vertices_on_front[next_index] << endl;
+          cout << "used? " << this->vertices_used[next_index] << endl;
+          if (success && (this->vertices_on_front[next_index] || !this->vertices_used[next_index])) {
             cout << "pivot edge's indices: " << active_edge->i << " ," << active_edge->j << endl;
-            cout << "next index is: " << next_index << endl;
             output_triangle(active_edge->i, active_edge->j, next_index);
             cout << "faces in mesh: " << this->pm->polygons.size() << endl;
           } else {
@@ -193,27 +195,30 @@ namespace CGL {
       Vector3D ji = j-i;
       Vector3D xi = x-i;
       Vector3D n = cross(ji, xi);
-      cout << "i: " << i << endl;
-      cout << "j: " << j << endl;
-      cout << "x: " << x << endl;
-
-      cout << "ji: " << ji << endl;
-      cout << "xi: " << xi << endl;
-      cout << "cross(ji, xi): " << n << endl;
+      // cout << "i: " << i << endl;
+      // cout << "j: " << j << endl;
+      // cout << "x: " << x << endl;
+      //
+      // cout << "ji: " << ji << endl;
+      // cout << "xi: " << xi << endl;
+      // cout << "cross(ji, xi): " << n << endl;
 
       Vector3D p0 = cross(dot(ji, ji) * xi - dot(xi, xi) * ji, n) / (2 * dot(n, n)) + i;
-      cout << dot(ji, ji) << endl;
-      cout << "a" << dot(ji, ji) * xi - dot(xi, xi) * ji << endl;
-      cout << "num: " << cross(dot(ji, ji) * xi - dot(xi, xi) * ji, n) << endl;
-      cout << "den: " << (2 * dot(n, n)) << endl;
-      cout << "frc: " << cross(dot(ji, ji) * xi - dot(xi, xi) * ji, n) / (2 * dot(n, n))<< endl;
-      cout << "p0: " << p0 << endl;
-      cout << "dot product" << dot(p0-i, p0-i) << endl;
+      // cout << dot(ji, ji) << endl;
+      // cout << "a" << dot(ji, ji) * xi - dot(xi, xi) * ji << endl;
+      // cout << "num: " << cross(dot(ji, ji) * xi - dot(xi, xi) * ji, n) << endl;
+      // cout << "den: " << (2 * dot(n, n)) << endl;
+      if (dot(n, n) == 0) {
+        return Vector3D(9999, 9999, 9999);
+      }
+      // cout << "frc: " << cross(dot(ji, ji) * xi - dot(xi, xi) * ji, n) / (2 * dot(n, n))<< endl;
+      // cout << "p0: " << p0 << endl;
+      // cout << "dot product" << dot(p0-i, p0-i) << endl;
       double t1 = sqrt((rho*rho - dot(p0-i, p0-i))/ dot(n, n));
       // Vector3D t2 = -sqrt((rho^2 - dot(p0-i, p0-i))/ dot(n, n));
-      cout << "t1: " << t1 << endl;
+      // cout << "t1: " << t1 << endl;
       Vector3D c1 = p0 + (n * t1);
-      cout << "c1: " << c1 << endl;
+      // cout << "c1: " << c1 << endl;
       return c1;
     }
     /**
@@ -245,18 +250,25 @@ namespace CGL {
         std::vector<Index> center_indices;
         std::vector<Vector3D> centers;
 
-        //FIXME: hard code
-        Index chosen_vtx = candidates[0];
-        global_front->output_triangle(chosen_vtx, this->i, this->j);
-        *k = chosen_vtx;
-        return true;
+        // //FIXME: hard code
+        // Index chosen_vtx = candidates[0];
+        // global_front->output_triangle(chosen_vtx, this->i, this->j);
+        // // global_front->output_triangle(this->j, this->i, chosen_vtx);
+        // *k = chosen_vtx;
+        // return true;
 
         // calculate all centers of spheres that touch i,j,x
         for(Index x_i : candidates){
+          cout << "considering " << x_i << endl;
           Vector3D x = vertices[x_i];
           Vector3D c = get_sphere_center(i, j, x, rho);
+          if (c.x == 9999 && c.y == 9999 && c.z == 9999) continue;
               cout << "distance from m: "<< (c-m).norm() << endl;
-              if ((c-m).norm() == r){
+              cout << "on front? " << global_front->vertices_on_front[x_i] << endl;
+              cout << "used? " << global_front->vertices_used[x_i] << endl;
+              if ((c-m).norm() == r && (global_front->vertices_on_front[x_i]
+                    || !global_front->vertices_used[x_i])) {
+                  cout << "center found: " << x_i << endl;
                   center_indices.push_back(x_i);
                   centers.push_back(c);
             }
@@ -266,16 +278,18 @@ namespace CGL {
         // checking whether the center lies on the circle gamma
         Vector3D b = vertices[this->o] - m;
         Vector3D a;
-        double max_proj = 0;
+        double max_proj = std::numeric_limits<double>::lowest();
         Index first_index;
         for (std::size_t i = 0; i != centers.size(); ++i) {
             a = centers[i] - m;
-            if (dot(a,b) > max_proj ){
+            cout << "da dot " << dot(a,b) << endl;
+             if (dot(a,b) > max_proj ){
                 max_proj = dot(a,b);
                 first_index = center_indices[i];
             }
         }
         if (max_proj == 0){
+            *k = 99999999;
             return false;
         }
         *k = first_index;
@@ -331,16 +345,16 @@ namespace CGL {
                 printf("in while\n");
                 cout << edge << endl;
             }
-            if(edge->is_active) {
-                *e = *edge;
-                cout << "hello" << endl;
-                cout << e->my_loop->my_front->vertices.size() << endl;
-                cout << "yay" << endl;
-                // cout << "found active edge, testing its integrity" << endl;
-                // e->my_loop->my_front->vertices;
-                // cout << "success" << endl;
-                return true;
-            }
+            // if(edge->is_active) {
+            //     *e = *edge;
+            //     cout << "hello" << endl;
+            //     cout << e->my_loop->my_front->vertices.size() << endl;
+            //     cout << "yay" << endl;
+            //     // cout << "found active edge, testing its integrity" << endl;
+            //     // e->my_loop->my_front->vertices;
+            //     // cout << "success" << endl;
+            //     return true;
+            // }
         }
       return false;
     }
@@ -373,16 +387,21 @@ namespace CGL {
       Index j = (*indices)[1];
       Index k = (*indices)[2];
 
+      this->vertices_on_front[i] = true;
+      this->vertices_on_front[j] = true;
+      this->vertices_on_front[j] = true;
+      this->vertices_used[i] = true;
+      this->vertices_used[j] = true;
+      this->vertices_used[k] = true;
       // Make polygon
-      Polygon polygon;
+      // Polygon polygon;
       std::vector<Index> triangle_indices;
-
       triangle_indices.push_back(i);
       triangle_indices.push_back(j);
       triangle_indices.push_back(k);
-      polygon.vertex_indices = triangle_indices;
-      this->pm->polygons.push_back(polygon);
       *indices = triangle_indices;
+
+      output_triangle(i, j, k);
 
       // Make new edges to push to a loop
       // TODO: set fronts

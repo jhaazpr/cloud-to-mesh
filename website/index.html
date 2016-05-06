@@ -63,8 +63,56 @@
           Visualizing Point Clouds
         </section>
         <section class="text">
-          
+          Meshedit (without the ++) was previously used for viewing meshes for the second homework in
+          <a href="http://cs184.eecs.berkeley.edu/cs184_sp16">UC Berkeley's CS184: Introduction to Computer Graphics and Imaging.</a>
+          We extended Meshedit's functionality to load <strong>.ply</strong> file, which consist principally of a list
+          of vertex points:
         </section>
+        <section class="subimage"><img src="./images/ply_screenshot.png"></section>
+        <section class="text">
+          To load points, we first parse the vertices from the .ply file and place each in a <strong>Vector3D</strong>
+          object, which is simply an object with x, y, and z fields that supports vector operations such
+          as vector addition, dot products and norms. Next, we create a <strong>PointCloud</strong> object which contains
+          the vertices, encapsulate the object in a <strong>PointCloudNode</strong> which we push to the back of a list
+          of nodes in the global <strong>Scene</strong> object. This setup is neccessary for working with current rendering
+          pipeline.
+        </section>
+        <section class="text">
+          Next, we implemented the <strong>renderPoints</strong> function which, like <strong>renderMesh</strong>, is called
+          many times per second and draws OpenGL objects to the canvas. Note that the point-drawing OpenGL code could be more cleanly
+          implemented with <strong>glDrawArrays</strong>, but using a for loop worked in practice, even for very large point clouds.
+        </section>
+        <pre>
+        <code class="language-clike">
+          void MeshEdit::renderPoints(PointCloud& point_cloud) {
+              std::vector<Vector3D> vertices = point_cloud.vertices;
+              DrawStyle *style = &defaultStyle;
+              setColor(style->vertexColor);
+              glPointSize(style->vertexRadius);
+              for (Vector3D v : vertices) {
+                glBegin(GL_POINTS);
+                glVertex3d(v.x, v.y, v.z);
+                glEnd();
+              }
+          }
+        </code>
+        </pre>
+        <section class="text">
+          We used .ply files from the <a href="http://graphics.stanford.edu/data/3Dscanrep/">Stanford 3D scanning repository</a>.
+          Note that while these .ply files contain information about the faces of the triangle, we limit ourselves to parsing
+          only the vertex information.
+          Here are two point cloud visualizations of the scanned side of a dragon statue, one with the viewer
+          zoomed out and one zoomed in such that the points become clearly visible.
+        </section>
+        <section class="subimage"><img src="./images/dragon_pc.png"></section>
+        <section class="subimage"><img src="./images/dragon_pc_zoom.png"></section>
+        <section class="text">
+          One advantage of point cloud visualization is that it allows for visualizing objects that would
+          have a very high poly count as a mesh, and thus would be slow to load and render. Here is a point cloud
+          rendering of the full "Happy Buddha" scan, containing 543,652 vertices.
+        </section>
+        <section class="subimage"><img src="./images/buddha_pc_cross.png"></section>
+
 
         <section class="header">
           Mesh Reconstruction
@@ -151,6 +199,7 @@
             2. 
 
           http://www.research.ibm.com/vistechnology/pdf/bpa_tvcg.pdf</p>
+          Things to cover: polygon soup data structure. Using polygon soup and loop/edge data struture in parallel
         </section>
 
         <section class="header">

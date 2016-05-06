@@ -2,6 +2,7 @@
 #include "shaderUtils.h"
 #include "GL/glew.h"
 #include <signal.h>
+#include "collada.h"
 
 #define PI 3.14159265
 
@@ -103,7 +104,7 @@ namespace CGL {
         hoverStyle.strokeWidth = 4.0;
         selectStyle.strokeWidth = 8.0;
 
-        defaultStyle.vertexRadius = 5.0;
+        defaultStyle.vertexRadius = 10.0;
         hoverStyle.vertexRadius = 10.0;
         selectStyle.vertexRadius = 20.0;
     }
@@ -230,6 +231,13 @@ namespace CGL {
         return "Assignment 2: MeshEdit";
     }
 
+    void MeshEdit::temporaryRenderMesh() {
+      // pointCloudMode = false;
+      // HalfedgeMesh hem = meshNodes.back().mesh;
+      // renderMesh(hem);
+      // loadFile(this, "../dae/teapot.dae");
+    }
+
     void MeshEdit::key_event(char key) {
         if (key >= '0' && key <= '9') {
             glUseProgram(shaderProgID);
@@ -288,6 +296,10 @@ namespace CGL {
                 //FIXME: should not have to turn off pointCloude mode
                 pointCloudMode = false;
                 constructMesh();
+                break;
+            case 'h':
+            case 'H':
+                temporaryRenderMesh();
                 break;
             case 'q':
             case 'Q':

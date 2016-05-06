@@ -246,6 +246,9 @@ namespace CGL {
         virtual void scroll_event(float offset_x, float offset_y);
         virtual void mouse_button_event(int button, int event);
 
+        Polymesh *temp_pm;
+        void temporaryRenderMesh(void);
+
         void load(Scene* scene);
 
     private:

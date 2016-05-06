@@ -887,7 +887,7 @@ namespace CGL {
         }
 
         Size Start = mesh.nFaces();
-        while(mesh.nFaces() > 300) {
+        while(mesh.nFaces() > 80) {
             // Get the cheapest edge from the queue.
             EdgeRecord bestEdge = queue.top();
             // Remove the cheapest edge from the queue by calling pop().
@@ -936,7 +936,7 @@ namespace CGL {
                         h1 = h1_twin->next();
                       } while(h1 != ht);        // keep going until we're back at the beginning
                 }
-
+                queue.remove(bestEdge);
             }
         }
 

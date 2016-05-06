@@ -194,33 +194,171 @@
           <li>Ignored the vertex normals: The ply files we used didn't have vertex normals so we didn't check if the ball was on the "outside" of the point cloud.</li>
           <li>Choose 1 of 2 possible sphere centers: Because we don't have surface normals, we can determine which side the ball is on, so we just chose one.</li>
           </p>
-          <strong>Lessons Learned:</strong>
-            1. Consider your data structures carefully before implementing anything. 
-            2. 
-
-          http://www.research.ibm.com/vistechnology/pdf/bpa_tvcg.pdf</p>
-          Things to cover: polygon soup data structure. Using polygon soup and loop/edge data struture in parallel
         </section>
 
         <section class="header">
           Mesh Simplification
         </section>
         <section class="text">
-          Hello peeps
+          <p><strong>Collapse Edges:</strong>
+            Most of the popular algorithms for simplifying meshes include iterative edge contraction. Therefore, to use these algorithms we have to impelement the abiblity to collapse edges. To do so we have to remove the selected edge from the mesh, along with the faces, halfedges and vertex that will no longer be needed. While doing this we have to make sure that all of the remaining mesh features are correctly re-attached to eachother. Here is a diagram of an edge collaps:
+            <section class="subimage"><img src="./images/collaps.png"></section>
+            Im our implementation we first check to make sure the selected edge is not a boundary edge. We then check to make sure that there are no more than two connected neighboring vertices of v1, and v2. If there are more then two connections, collapsing the edges will cause the mesh to become non-manifold. Next, to avaoid malloc and segmenation fault errors, we have to set the halfedge values of the edges, that are going to be remaining from the dark grey diamond that collapses(see figure above), to the halfedges on the outer side of the diamond, we have to set the halfedge valuse of the edges that are being removed to the halfedges on the inner side of the diamond, and we must set the halfedge values of the remaining connected neighboring vertices to the halfedges on the outer side of the diamond. Instead of creating a new vertex v we keep the vertex v1 and attached all of the halfedges that used to attach to v2 to v1. After they are all attached to v1, we close the gap by setting the twin values of the remaining half edges. Finally we delete all of the un-needed fatures and return v1.
+      </section>
+      <section class="text">
+            Since vertices can have different numbers of connected edges we used this code to iterate through features around a vertex:
+      </section>
+            <pre>
+          <code class="language-clike">
+            HalfedgeIter h = v->halfedge();    // get one of the outgoing halfedges of the vertex
+            do {
+                HalfedgeIter h_twin = h->twin(); // get the vertex of the current halfedge
+                //TEST IF CONNECTED HERE
+                h = h_twin->next();               // move to the next outgoing halfedge of the vertex.
+                //SET HALFEDGE VERTEX HERE
+            } while(h != v->halfedge());        // keep going until we're back at the beginning     
+            </code>
+            </pre>
+          </p>
+          <section class="text">
+          Here is an edge collapse performed on a cube.
+          // THESE SHOULD BE IN A LINE
+          </section>
+          <section class="subimage"><img src="./images/qe_cube_before.png"></section>
+          <section class="subimage"><img src="./images/qe_cube_during.png"></section>
+          <section class="subimage"><img src="./images/qe_cube_after.png"></section>
+
+          <section class="text">
+          <p><strong>Quadric Error:</strong>
+            Now that we can collapse edges the question is which edges to collapse. We want to collapse the edge that will change the mesh the least. To find this edge we must develop some measure of change. Quadric error is one measure of cost and the algorithm for using this measure to simplify meashes was developed by Michael Garland and Paul Heckbert. This is the algorithm that we use in Meshedit++. The main idea for quadric error is calculating the distance from any point to a plane, and summing these distances for each vertex. For a plane point x, normal N, and point p, the equation for calculating the distance from p to the plane is given by:
+          </section>
+            <section class="equation"><img src="./images/distance1.png"></section>
+            <section class="subimage"><img src="./images/PlaneNormalEquation.png"></section>
+          <section class="text">
+            In homogeneous coordinates this equation can be writen as:
+          </section>
+            <section class="equation"><img src="./images/distance2.png"></section>
+          <section class="text">
+            Where u = (x,y,z,1) and v = (a,b,c,d). Homogeneous coordinates are a system of coordinates used in projective geometry, that can represent infinite points using finite coordinates. v v^T is an outer product of v with itself and is equal to K our quadric matrix. K is of the form:
+          </section>
+            <section class="equation"><img src="./images/matrix.png"></section>
+          <section class="text">
+            For each plane in the mesh we calculate this qudaric matrix and store it.
+            The quadric for a vertex is the sum of quadrics for the surrounding faces.
+          </section>
+            <section class="equation"><img src="./images/VertexNormals.png"></section>
+          <section class="text">
+            Using these vertex quadrics we then iterate through all the edges in the graph and add them to an EdgeRecord. EdfeRecord uses the quadrics of the two vertices of the edges, the sum of which is the quadric for the edge, to calculate the optimal position for the resulting vertex of an edge collapse. This is done by chosing the x that minimizes the distance equation:
+          </section>
+            <section class="equation"><img src="./images/plane.png"></section>
+          <section class="text">
+            We can rewrite this equation as the linear system:
+          </section>
+          <section class="equation"><img src="./images/system.png"></section>
+          <section class="text">
+            Where A is:
+          </section>
+          <section class="equation"><img src="./images/A.png"></section>
+          <section class="text">
+            And b is:
+          </section>
+          <section class="equation"><img src="./images/B.png"></section>
+          <section class="text">
+            Using this system we can solve for x by calucating:
+          </section>
+          <section class="equation"><img src="./images/solve.png"></section>
+          <section class="text">
+          The rest of the simplification algorithm is as follows:
+          </section>
+          <section class="text">
+          <pre>
+          <code class="language-clike">
+            while(mesh.nFaces() > set_faces) {
+              // Get the cheapest edge from the queue.
+              bestEdge = queue.top();
+              // Remove the cheapest edge from the queue by calling pop().
+              queue.pop();
+              // Compute the new quadric by summing the quadrics at its two endpoints.
+              K = v1_quadric+v2_qudric
+              // Remove any edge touching either of its endpoints from the queue.
+              for v1 and v2 {
+                //Remove touching edges.
+                queue.remove(edge);
+              }
+
+              // Collapse the edge and set position to optimal point.
+              v = collapseEdge(bestEdge)
+              v_position = bestEdge_optimalPoint
+
+              // Set the quadric of the new vertex to the quadric computed in Step 2.
+              v_quadric = K;
+
+              // Insert any edge touching the new vertex into the queue, creating new edge records for each of them.
+              for (any edges touching v) {
+                queue.insert(edge);
+              }
+            }
+            </code>
+          </pre>
+          <section class="text">
+            Even though not mentioned in the original agorithm we added the case for when collapseEdge is unable to collapse the edge where all of the removed edges that touch v1 and v2 are added back to the queue execpt the tested edge.
+           </section>
+            <section class="text">
+            Here are some examples of meshes being simplified.
+            </section>
+              // in a line
+              <section class="subimage"><img src="./images/teapot_mesh.png"></section>
+              <section class="subimage"><img src="./images/teapot_mesh_simple.png"></section>
+              // in a line
+            <section class="text">
+              For this mesh the number of faces goes from 5856 to 3000 to 1000 to 200:
+            </section>
+              // in a line
+              <section class="subimage"><img src="./images/cow1.png"></section>
+              <section class="subimage"><img src="./images/cow2.png"></section>
+              <section class="subimage"><img src="./images/cow3.png"></section>
+              <section class="subimage"><img src="./images/cow4.png"></section>
+              <section class="text">
+            </pre>
+          </p>
+          </p>
         </section>
 
         <section class="header">
-          Results
+          Lessons Learned
         </section>
-        <section class="text">
-          Hello peeps
+
+        <section class="header">
+          <ul>
+          <li>When dealing with Halfedge structures make sure to account for all of your pieces or you can run into infinite loops and seg faults.</li>
+          <li>There are cases where an edge colapse can cause a mesh to be non-manifold and some of these cases are hard to implement checks for.</li>
+          </ul>
         </section>
+
 
         <section class="header">
           References
         </section>
         <section class="text">
-          Hello peeps
+          Visualizing Point Clouds:
+          <ul>
+          <li></li>
+          </ul>
+        </section>
+
+        <section class="text">
+          Ball Pivot:
+          <ul>
+          <li><a href="http://www.research.ibm.com/vistechnology/pdf/bpa_tvcg.pdf">The Ball-Pivoting Algorithm for Surface Reconstruction, Bernardini et al. </a></li>
+          </ul>
+        </section>
+          
+        <section class="text">
+          Mesh Simplification:
+          <ul>
+          <li><a href="http://462cmu.github.io/asst2_meshedit/">CMU 15-462/662 Assignment 2: A Mini Mesh editor</a></li>
+          <li><a href="http://www.cs.cmu.edu/~./garland/Papers/quadrics.pdf">Surface Simplification Using Quadric Error Metrics, Garland and Heckbert</a></li>
+          </ul>
         </section>
 
         <section class="header">

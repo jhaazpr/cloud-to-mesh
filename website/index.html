@@ -37,7 +37,7 @@
           vertex positions. However, in order to manipulate scanned geometries, we require <em>meshes</em>, which
           are structures composed of faces, vertices, and edges. To facilitate the point cloud-to-mesh pipeline,
           we present Meshedit++, an interactive editor which allows users to: visualize point clouds, convert
-          point clouds to potentially complex meshes, and simplify reconstruced meshes for easier use. By integrating
+          point clouds to potentially complex meshes, and simplify reconstructed meshes for easier use. By integrating
           all steps of the pipeline into one editor, we intend to transform the pipeline from an automatic, hidden
           process into an interactive and illuminating experience.
         </section>
@@ -55,8 +55,6 @@
         <section class="text">
           In the following sections, we describe the algorithms and technical details for each stage of the
           pipeline.
-
-          //TODO: more goes here? idk
         </section>
 
         <section class="header">
@@ -74,7 +72,7 @@
           object, which is simply an object with x, y, and z fields that supports vector operations such
           as vector addition, dot products and norms. Next, we create a <strong>PointCloud</strong> object which contains
           the vertices, encapsulate the object in a <strong>PointCloudNode</strong> which we push to the back of a list
-          of nodes in the global <strong>Scene</strong> object. This setup is neccessary for working with current rendering
+          of nodes in the global <strong>Scene</strong> object. This setup is necessary for working with current rendering
           pipeline.
         </section>
         <section class="text">
@@ -127,7 +125,7 @@
           <p>BPALoop is simply a linked list wrapper of edge that stores a pointer to the first edge in the list. The front contains a list of Loops that are currently being expanded. Loops may merge into each other or break apart as a result of join/glue operations.</p>
         </section>
         <section class="text">
-          <p>BPAEdge was necessary because the ball pivot algorithm pivots over an edge. Half edges addeded unnecessary complexity, while the polygon soup and vertices lacked the relationship between points i and j that we needed. We only keep track of edges on the constantly expandiing loop front, so every edge must have a corresponding triangle. We keep track of the third point and call it o; we will need it for our calculations later on.</p>
+          <p>BPAEdge was necessary because the ball pivot algorithm pivots over an edge. Half edges added unnecessary complexity, while the polygon soup and vertices lacked the relationship between points i and j that we needed. We only keep track of edges on the constantly expanding loop front, so every edge must have a corresponding triangle. We keep track of the third point and call it o; we will need it for our calculations later on.</p>
         </section>
         <section class="text">
           <p><strong>Algorithm:</strong>
@@ -182,7 +180,7 @@
           <section class="subimage"><img src="./images/sphere_center.png"></section>
           </section>
           <section class="text">
-          <p>One of the most common problems in this algorithm is finding a the center of a sphere with radius rho from 3 points. Given any three points i, j and x, we can form a parallelogram. The center of the parallelogram (p0) lies on the same line as the 0, 1 or 2 sphere centers that exist for our points. To find the distance t1, t2 we need to travel on the line p, we use pythagoreas theorem. </p>
+          <p>One of the most common problems in this algorithm is finding a the center of a sphere with radius rho from 3 points. Given any three points i, j and x, we can form a parallelogram. The center of the parallelogram (p0) lies on the same line as the 0, 1 or 2 sphere centers that exist for our points. To find the distance t1, t2 we need to travel on the line p, we use the Pythagorean theorem. </p>
           </section>
         <pre>
           <code class="language-clike">
@@ -204,10 +202,31 @@
           </a>
           ref: http://stackoverflow.com/questions/11719168/how-do-i-find-the-sphere-center-from-3-points-and-radius
           </section>
+
+          <section class="text">
+            However, the algorithm currently doesn't quite work as expected. Rather reconstructing a bunny out of a point cloud,
+            it reconstructs a crystalized bunny (note that environment mapping shading is applied):
+          </section>
+
+          <section class="subimage"><img src="./images/bun_pc_lowres.png"></section>
+          <section class="line-image-2"><img src="./images/crystal1.png"></section>
+          <section class="line-image-2"><img src="./images/crystal2.png"></section>
+          <section class="line-image-2"><img src="./images/crystal3.png"></section>
+          <section class="line-image-2"><img src="./images/crystal4.png"></section>
+
+          <section class="text">
+          We could not implement all stages of the pipeline in the allotted time, but our future plan would be to correct the issues
+          with the algorithm. One major issue is that the .ply files do not have vertex normals, which are required by the algorithm
+          described in Bernardini et al. (they describe having vertex normals as a "mild assumption"). Below is a simpler point cloud
+          that more clearly displays the extraneous triangles caused by starting the ball on the wrong side.
+          </section>
+          <section class="line-image-2"><img src="./images/simple_pc.png"></section>
+          <section class="line-image-2"><img src="./images/simple_mesh.png"></section>
+
           <section class="text">
           <strong>Simplifications:</strong>
           <li>Linear search instead of BVH: Efficient lookups would involve using a BVH tree to grab all point in a certain bounding box, however we didn't have time to implement this so we use linear search.</li>
-          <li>Ignored the vertex normals: The ply files we used didn't have vertex normals so we didn't check if the ball was on the "outside" of the point cloud.</li>
+          <li>Again, we ignored the vertex normals: The ply files we used didn't have vertex normals so we didn't check if the ball was on the "outside" of the point cloud.</li>
           <li>Choose 1 of 2 possible sphere centers: Because we don't have surface normals, we can determine which side the ball is on, so we just chose one.</li>
           </p>
         </section>
@@ -217,9 +236,9 @@
         </section>
         <section class="text">
           <p><strong>Collapse Edges:</strong>
-            Most of the popular algorithms for simplifying meshes include iterative edge contraction. Therefore, to use these algorithms we have to impelement the abiblity to collapse edges. To do so we have to remove the selected edge from the mesh, along with the faces, halfedges and vertex that will no longer be needed. While doing this we have to make sure that all of the remaining mesh features are correctly re-attached to eachother. Here is a diagram of an edge collaps:
+            Most of the popular algorithms for simplifying meshes include iterative edge contraction. Therefore, to use these algorithms we have to implement the ability to collapse edges. To do so we have to remove the selected edge from the mesh, along with the faces, halfedges and vertex that will no longer be needed. While doing this we have to make sure that all of the remaining mesh features are correctly re-attached to each other. Here is a diagram of an edge collapse:
             <section class="subimage"><img src="./images/collaps.png"></section>
-            Im our implementation we first check to make sure the selected edge is not a boundary edge. We then check to make sure that there are no more than two connected neighboring vertices of v1, and v2. If there are more then two connections, collapsing the edges will cause the mesh to become non-manifold. Next, to avaoid malloc and segmenation fault errors, we have to set the halfedge values of the edges, that are going to be remaining from the dark grey diamond that collapses(see figure above), to the halfedges on the outer side of the diamond, we have to set the halfedge valuse of the edges that are being removed to the halfedges on the inner side of the diamond, and we must set the halfedge values of the remaining connected neighboring vertices to the halfedges on the outer side of the diamond. Instead of creating a new vertex v we keep the vertex v1 and attached all of the halfedges that used to attach to v2 to v1. After they are all attached to v1, we close the gap by setting the twin values of the remaining half edges. Finally we delete all of the un-needed fatures and return v1.
+            Im our implementation we first check to make sure the selected edge is not a boundary edge. We then check to make sure that there are no more than two connected neighboring vertices of v1, and v2. If there are more then two connections, collapsing the edges will cause the mesh to become non-manifold. Next, to avoid malloc and segmenation fault errors, we have to set the halfedge values of the edges, that are going to be remaining from the dark grey diamond that collapses(see figure above), to the halfedges on the outer side of the diamond, we have to set the halfedge valuse of the edges that are being removed to the halfedges on the inner side of the diamond, and we must set the halfedge values of the remaining connected neighboring vertices to the halfedges on the outer side of the diamond. Instead of creating a new vertex v we keep the vertex v1 and attached all of the halfedges that used to attach to v2 to v1. After they are all attached to v1, we close the gap by setting the twin values of the remaining half edges. Finally we delete all of the un-needed features and return v1.
       </section>
       <section class="text">
             Since vertices can have different numbers of connected edges we used this code to iterate through features around a vertex:
@@ -229,20 +248,19 @@
             HalfedgeIter h = v->halfedge();    // get one of the outgoing halfedges of the vertex
             do {
                 HalfedgeIter h_twin = h->twin(); // get the vertex of the current halfedge
-                //TEST IF CONNECTED HERE
+                test if connected
                 h = h_twin->next();               // move to the next outgoing halfedge of the vertex.
-                //SET HALFEDGE VERTEX HERE
-            } while(h != v->halfedge());        // keep going until we're back at the beginning     
+                set halfedge vertex here
+            } while(h != v->halfedge());        // keep going until we're back at the beginning
             </code>
             </pre>
           </p>
           <section class="text">
           Here is an edge collapse performed on a cube.
-          // THESE SHOULD BE IN A LINE
           </section>
-          <section class="subimage"><img src="./images/qe_cube_before.png"></section>
-          <section class="subimage"><img src="./images/qe_cube_during.png"></section>
-          <section class="subimage"><img src="./images/qe_cube_after.png"></section>
+          <section class="line-image"><img src="./images/qe_cube_before.png"></section>
+          <section class="line-image"><img src="./images/qe_cube_during.png"></section>
+          <section class="line-image"><img src="./images/qe_cube_after.png"></section>
 
           <section class="text">
           <p><strong>Quadric Error:</strong>
@@ -251,7 +269,7 @@
             <section class="equation"><img src="./images/distance1.png"></section>
             <section class="subimage"><img src="./images/PlaneNormalEquation.png"></section>
           <section class="text">
-            In homogeneous coordinates this equation can be writen as:
+            In homogeneous coordinates this equation can be written as:
           </section>
             <section class="equation"><img src="./images/distance2.png"></section>
           <section class="text">
@@ -259,12 +277,12 @@
           </section>
             <section class="equation"><img src="./images/matrix.png"></section>
           <section class="text">
-            For each plane in the mesh we calculate this qudaric matrix and store it.
+            For each plane in the mesh we calculate this quadric matrix and store it.
             The quadric for a vertex is the sum of quadrics for the surrounding faces.
           </section>
             <section class="equation"><img src="./images/VertexNormals.png"></section>
           <section class="text">
-            Using these vertex quadrics we then iterate through all the edges in the graph and add them to an EdgeRecord. EdfeRecord uses the quadrics of the two vertices of the edges, the sum of which is the quadric for the edge, to calculate the optimal position for the resulting vertex of an edge collapse. This is done by chosing the x that minimizes the distance equation:
+            Using these vertex quadrics we then iterate through all the edges in the graph and add them to an EdgeRecord. EdfeRecord uses the quadrics of the two vertices of the edges, the sum of which is the quadric for the edge, to calculate the optimal position for the resulting vertex of an edge collapse. This is done by choosing the x that minimizes the distance equation:
           </section>
             <section class="equation"><img src="./images/plane.png"></section>
           <section class="text">
@@ -295,7 +313,7 @@
               // Remove the cheapest edge from the queue by calling pop().
               queue.pop();
               // Compute the new quadric by summing the quadrics at its two endpoints.
-              K = v1_quadric+v2_qudric
+              K = v1_quadric+v2_quadric
               // Remove any edge touching either of its endpoints from the queue.
               for v1 and v2 {
                 //Remove touching edges.
@@ -317,23 +335,22 @@
             </code>
           </pre>
           <section class="text">
-            Even though not mentioned in the original agorithm we added the case for when collapseEdge is unable to collapse the edge where all of the removed edges that touch v1 and v2 are added back to the queue execpt the tested edge.
+            Even though not mentioned in the original algorithm we added the case for when collapseEdge is unable to collapse the edge where all of the removed edges that touch v1 and v2 are added back to the queue except the tested edge.
            </section>
             <section class="text">
             Here are some examples of meshes being simplified.
             </section>
-              // in a line
-              <section class="subimage"><img src="./images/teapot_mesh.png"></section>
-              <section class="subimage"><img src="./images/teapot_mesh_simple.png"></section>
-              // in a line
+              <section class="line-image-2"><img src="./images/teapot_mesh.png"></section>
+              <section class="line-image-2"><img src="./images/teapot_mesh_simple.png"></section>
             <section class="text">
-              For this mesh the number of faces goes from 5856 to 3000 to 1000 to 200:
             </section>
-              // in a line
-              <section class="subimage"><img src="./images/cow1.png"></section>
-              <section class="subimage"><img src="./images/cow2.png"></section>
-              <section class="subimage"><img src="./images/cow3.png"></section>
-              <section class="subimage"><img src="./images/cow4.png"></section>
+            <section class="text">
+            For this mesh the number of faces gets reduced from 5856 to 3000 to 1000 to 200:
+            </section>
+              <section class="line-image-2"><img src="./images/cow1.png"></section>
+              <section class="line-image-2"><img src="./images/cow2.png"></section>
+              <section class="line-image-2"><img src="./images/cow3.png"></section>
+              <section class="line-image-2"><img src="./images/cow4.png"></section>
               <section class="text">
             </pre>
           </p>
@@ -344,11 +361,49 @@
           Lessons Learned
         </section>
 
-        <section class="header">
+        <section class="text">
           <ul>
+          <li>Visualizing the point cloud is not necessary for debugging mesh reconstruction, and hence should be a lower priority.</li>
+          <li>When implementing extra classes for processing PolygonSoup objects, be sure unit test each objects of each type of class.</li>
           <li>When dealing with Halfedge structures make sure to account for all of your pieces or you can run into infinite loops and seg faults.</li>
-          <li>There are cases where an edge colapse can cause a mesh to be non-manifold and some of these cases are hard to implement checks for.</li>
+          <li>There are cases where an edge collapse can cause a mesh to be non-manifold and some of these cases are hard to implement checks for.</li>
           </ul>
+        </section>
+
+        <section class="header">
+          Usage
+        </section>
+        <section class="text">
+          <table style="width:100%">
+            <tr>
+              <td><strong>Command</strong></td>
+              <td><strong>Key</strong></td>
+            </tr>
+            <tr>
+              <td>Display point cloud</td>
+              <td>P</td>
+            </tr>
+            <tr>
+              <td>Build Mesh</td>
+              <td>B</td>
+            </tr>
+            <tr>
+              <td>Collapse</td>
+              <td>C</td>
+            </tr>
+            <tr>
+              <td>Simplify Mesh</td>
+              <td>-</td>
+            </tr>
+          </table>
+        </section>
+
+        <section class="text">
+          Load in a .ply file using the command: $ ./meshedit PLY_FILE . Important: the editor
+          expects .ply files with <strong>three</strong> entries per line (the Stanford files
+          have five.) To deal with this, either delete the extra entries on each line (only
+          the first three matter), or in main.cpp, follow the instructions to comment and
+          uncomment the fscanf lines.
         </section>
 
 
@@ -358,7 +413,7 @@
         <section class="text">
           Visualizing Point Clouds:
           <ul>
-          <li></li>
+          <li><a href="http://www.opengl-tutorial.org/beginners-tutorials/">Tutorial for learning OpenGL</a></li>
           </ul>
         </section>
 
@@ -368,7 +423,7 @@
           <li><a href="http://www.research.ibm.com/vistechnology/pdf/bpa_tvcg.pdf">The Ball-Pivoting Algorithm for Surface Reconstruction, Bernardini et al. </a></li>
           </ul>
         </section>
-          
+
         <section class="text">
           Mesh Simplification:
           <ul>
@@ -381,7 +436,12 @@
           Contributions
         </section>
         <section class="text">
-          Hello peeps
+          <ul>
+            <li><strong>Jasper:</strong> Hacked the meshedit files to have the editor render point clouds. Helped write and debug mesh reconstruction.</li>
+            <li><strong>Annalise:</strong> Implemented all of the mesh simplification step of the pipeline.</li>
+            <li><strong>Matthew:</strong> Helped write and debug mesh reconstruction. Implemented the geometry-heavy parts of mesh reconstruction,
+            such as point finding during ball pivoting.</li>
+          </ul>
         </section>
 
       </article>

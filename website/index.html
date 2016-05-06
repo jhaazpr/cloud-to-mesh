@@ -70,7 +70,87 @@
           Mesh Reconstruction
         </section>
         <section class="text">
-          Hello peeps
+          <p> <strong> Data Structures:</strong> In order to implement the Ball Pivoting algorithm, we first had to set up a couple data structures, namely BPAEdge, BPALoop, and BPAFront. </p>
+  
+          <p>BPAFront encapsulates the growing mesh and keeps track of all point and polygons at all times. The name Front, refers to the set of active edges (contained in Loops) that we are currently considering in order to expand the mesh. There is a single Front per mesh.</p>
+
+          <p>BPALoop is simply a linked list wrapper of edge that stores a pointer to the first edge in the list. The front contains a list of Loops that are currently being expanded. Loops may merge into each other or break apart as a result of join/glue operations.</p>
+
+          <p>BPAEdge was necessary because the ball pivot algorithm pivots over an edge. Half edges addeded unnecessary complexity, while the polygon soup and vertices lacked the relationship between points i and j that we needed. We only keep track of edges on the constantly expandiing loop front, so every edge must have a corresponding triangle. We keep track of the third point and call it o; we will need it for our calculations later on.</p>
+
+          
+          <p><strong>Algorithm:</strong>
+
+          The Ball Pivot algorithm consists of 2 main parts, the Ball Pivot step in which we discover new points and add to the mesh we are currently building on, and Seed Triangle selection, which occurs when ball pivoting gets stuck and requires us to select a new set of edges to expand on. This continues until we've considered all points that the ball can reach. </p>
+        <pre>
+          <code class="language-clike">
+              while true
+                1. Ball Pivot
+                e_ij = get_active_edge(F)
+                while (e_ij):
+                  k = ball_pivot(e_ij)
+                  if (k && (not_used(k) || on_front(k)))
+                    output_triangle(i, k, j)
+                    join(e_ij, k , F)
+                    if (e_ki in F) glue(e_ik, e_ki , F)
+                    if (e_jk in F) glue(e_kj, e_jk, F)
+                   else
+                    mark_as_boundary(e_ij)
+                  e_ij = get_active_edge(F)
+
+                2. Find Seed Triangle
+                (i, j, k) = find_seed_triangle()
+                if ((i, j, k))
+                  output_triangle(i, j, k)
+                  insert_edge(e_ij, F)
+                  insert_edge(e_jk, F)
+                  insert_edge(e_ki, F) 
+                else 
+                  return
+            </code>
+            </pre>
+          <section class="subimage"><img src="./images/bpa.png"></section>
+
+          <p><strong>1. Ball Pivot</strong>
+          First we select an active edge from the front. An active edge is any edge that has not been fully explored yet and thus has the opportunity for expansion. We then find all points in a 2*rho radius from the midpoint m between i and j. These are our candidate points. For each candidate point x, we calculate the center of the sphere of radius rho that touches i, j and x: c_ijx. r is the distance from m to the center of the current center of the ball, c_ijo. For each calculated center c_ijx we check if it is on the circle gamma, defined by the radius r and center m, perpendicular to the pivot edge ij. We then choose the c_ijx that we encounter first while pivoting on the edge. </p>
+
+          <p>Then we have found k = x, we need to incorporate the triangle ijk into our mesh and update our loop and other pointers. We expand the loop to incorporate edges ik and kj, and we remove edge ij. This operation is described as a join operation on an edge and point in the pseudocode above.</p>
+
+          <p>As our loop expands to fit whatever complex geometry the point cloud describes, we may find ourselves having to break apart loops creating more loops, or merging loops into a single loop. These operations are called glue operations. The glue operations ensure that at the end of the while loop, all our loops merge and we are left with a single mesh. We chose not too include glue operations as they were very complicated to implement, and while we were left with multiple meshes, they still described all the points in the point cloud reachable with our rho-sphere.</p>
+
+          <p><strong>2. Find Seed Triangle</strong>
+          Seed triangle selection is very similar to finding the next position of the sphere in the ball pivot step. We find all pairs of points in a radius 2*rho of a random, unused point. Then we verify that sphere of radius rho can lie on these three points. Finally, we check that the sphere does not contain any other data points and that it lies on the "outside" of the point cloud. However, since we didn't have vertex normals to work with, we were unable to tell where the ball was.</p>
+
+          <p><strong>Sphere Center from 3 points and a radius</strong></p>
+          <section class="subimage"><img src="./images/sphere_center.png"></section>
+
+          <p>One of the most common problems in this algorithm is finding a the center of a sphere with radius rho from 3 points. Given any three points i, j and x, we can form a parallelogram. The center of the parallelogram (p0) lies on the same line as the 0, 1 or 2 sphere centers that exist for our points. To find the distance t1, t2 we need to travel on the line p, we use pythagoreas theorem. </p>
+        <pre>
+          <code class="language-clike">
+            ji = j-i
+            xi = x-i
+            n = cross(ji, xi)
+            p0 = cross(dot(ji, ji) * xi - dot(xi, xi) * ji, n) / (2 * dot(n, n)) + i
+            t1 = sqrt((rho*rho - dot(p0-i, p0-i))/ dot(n, n))
+            t2 = -sqrt((rho^2 - dot(p0-i, p0-i))/ dot(n, n))
+            c1 = p0 + (n * t1)
+            c2 = p0 + (n * t2)
+
+            </code>
+            </pre>
+            
+          <p>ref: http://stackoverflow.com/questions/11719168/how-do-i-find-the-sphere-center-from-3-points-and-radius
+          <p>
+          <strong>Simplifications:</strong>
+          <li>Linear search instead of BVH: Efficient lookups would involve using a BVH tree to grab all point in a certain bounding box, however we didn't have time to implement this so we use linear search.</li>
+          <li>Ignored the vertex normals: The ply files we used didn't have vertex normals so we didn't check if the ball was on the "outside" of the point cloud.</li>
+          <li>Choose 1 of 2 possible sphere centers: Because we don't have surface normals, we can determine which side the ball is on, so we just chose one.</li>
+          </p>
+          <strong>Lessons Learned:</strong>
+            1. Consider your data structures carefully before implementing anything. 
+            2. 
+
+          http://www.research.ibm.com/vistechnology/pdf/bpa_tvcg.pdf</p>
         </section>
 
         <section class="header">

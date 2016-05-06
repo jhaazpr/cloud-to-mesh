@@ -124,7 +124,7 @@
 
           <p>BPALoop is simply a linked list wrapper of edge that stores a pointer to the first edge in the list. The front contains a list of Loops that are currently being expanded. Loops may merge into each other or break apart as a result of join/glue operations.</p>
 
-          <p>BPAEdge was necessary because the ball pivot algorithm pivots over an edge. Half edges addeded unnecessary complexity, while the polygon soup and vertices lacked the relationship between points i and j that we needed. We only keep track of edges on the constantly expandiing loop front, so every edge must have a corresponding triangle. We keep track of the third point and call it o; we will need it for our calculations later on.</p>
+          <p>BPAEdge was necessary because the ball pivot algorithm pivots over an edge. Half edges addded unnecessary complexity, while the polygon soup and vertices lacked the relationship between points i and j that we needed. We only keep track of edges on the constantly expanding loop front, so every edge must have a corresponding triangle. We keep track of the third point and call it o; we will need it for our calculations later on.</p>
 
           
           <p><strong>Algorithm:</strong>
@@ -172,7 +172,7 @@
           <p><strong>Sphere Center from 3 points and a radius</strong></p>
           <section class="subimage"><img src="./images/sphere_center.png"></section>
 
-          <p>One of the most common problems in this algorithm is finding a the center of a sphere with radius rho from 3 points. Given any three points i, j and x, we can form a parallelogram. The center of the parallelogram (p0) lies on the same line as the 0, 1 or 2 sphere centers that exist for our points. To find the distance t1, t2 we need to travel on the line p, we use pythagoreas theorem. </p>
+          <p>One of the most common problems in this algorithm is finding a the center of a sphere with radius rho from 3 points. Given any three points i, j and x, we can form a parallelogram. The center of the parallelogram (p0) lies on the same line as the 0, 1 or 2 sphere centers that exist for our points. To find the distance t1, t2 we need to travel on the line p, we use pythagorea's theorem. </p>
         <pre>
           <code class="language-clike">
             ji = j-i

@@ -115,7 +115,7 @@ namespace CGL {
       /**
        * Pulls any active edge from the front.
        */
-      bool get_active_edge(BPAEdge * e);
+      BPAEdge *get_active_edge(void);
 
       /**
        * Add an edge as a new loop in the front. Don't forget to update stuff.

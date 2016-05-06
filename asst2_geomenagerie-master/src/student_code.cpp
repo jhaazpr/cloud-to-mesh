@@ -23,13 +23,13 @@ namespace CGL {
      * init_polymesh() function in meshEdit.cpp
      */
     void BPAFront::BPA(double rho) {
-      // cout << "BPA yo, voyteces: " << vertices.size() << endl;
+      // //cout << "BPA yo, voyteces: " << vertices.size() << endl;
       // Polymesh pm;
       // BPAFront front(vertices, &pm, 1.0);
       global_front = this;
       std::vector<Index> seed_triangle_indices;
       if (!find_seed_triangle(&seed_triangle_indices, rho)) {
-        cout << "u ded" << endl;
+        //cout << "u ded" << endl;
         return;
       }
       BPAEdge * edge = get_active_edge();
@@ -38,21 +38,22 @@ namespace CGL {
                 Index k;
                 bool pivot_success = edge->ball_pivot(rho, &k);
                 // vertex checking done in ball pivot
-                cout << "k: " << k << endl;
+                //cout << "k: " << k << endl;
                 if (pivot_success){
                     output_triangle(edge->i, edge->j, k);
                     this->vertices_on_front[k] = true;
                     this->vertices_used[k] = true;
-                    cout << "loop size: " << global_front->my_loop.size() << endl;
+                    //cout << "loop size: " << global_front->loops.size() << endl;
                     join(edge, k);
-                    cout << "loop size: " << global_front->my_loop.size() << endl;
+                    //cout << "loop size: " << global_front->loops.size() << endl;
                     // add vertex to the front
                     this->vertices_on_front[k] = true;
                     // if (e_ki in F) glue(e_ik, e_ki , F);
                     // if (e_jk in F) glue(e_kj, e_jk, F);
+                    //cout << " on front? " << global_front->vertices_on_front[k] << endl;
                 }
                 edge->mark_not_active();
-                cout << "should be false" << edge->is_active << endl;
+                //cout << "should be false" << edge->is_active << endl;
                 edge = get_active_edge();
             }
             if (!find_seed_triangle(&seed_triangle_indices,rho)){
@@ -69,12 +70,12 @@ namespace CGL {
         triangle_indices.push_back(j);
         triangle_indices.push_back(k);
         polygon.vertex_indices = triangle_indices;
-        cout << "# poly: " << pm->polygons.size() <<  endl;
-        cout << "# vert: " << pm->vertices.size() <<  endl;
+        //cout << "# poly: " << pm->polygons.size() <<  endl;
+        //cout << "# vert: " << pm->vertices.size() <<  endl;
         this->pm->polygons.push_back(polygon);
-        cout << "polygon: " << i << " " << j << " " <<  k << " " << endl;
-        cout << "# poly: " << pm->polygons.size() <<  endl;
-        cout << "# vert: " << pm->vertices.size() <<  endl;
+        //cout << "polygon: " << i << " " << j << " " <<  k << " " << endl;
+        //cout << "# poly: " << pm->polygons.size() <<  endl;
+        //cout << "# vert: " << pm->vertices.size() <<  endl;
     }
 
     BPAEdge::BPAEdge( void )
@@ -110,6 +111,7 @@ namespace CGL {
         // add vertex to the front
         this->vertices_on_front[k] = true;
         this->vertices_used[k] = true;
+        e_ij->my_loop->start_edge = e_ij;
     }
 
     /**
@@ -129,7 +131,7 @@ namespace CGL {
         for (std::size_t i = 0; i != vertices.size(); ++i) {
             if ((vertices[i] - m).norm()  < 2 * rho && i != exclude_i && i != exclude_j && !global_front->vertices_used[i]){
                 candidates.push_back(i);
-                cout << "candidate: " << vertices[i] << endl;
+                //cout << "candidate: " << vertices[i] << endl;
             }
         }
         return candidates;
@@ -141,7 +143,7 @@ namespace CGL {
     std::vector<Index> find_nearby_points(double rho, Index cand_idx, std::vector<Vector3D> vertices){
         std::vector<Index> candidates;
         for (std::size_t i = 0; i != vertices.size(); ++i) {
-          // cout << (vertices[i] - vertices[cand_idx]).norm() << endl;
+          // //cout << (vertices[i] - vertices[cand_idx]).norm() << endl;
             if (((vertices[i] - vertices[cand_idx]).norm()  < 2 * rho) && (cand_idx != i) && !global_front->vertices_used[i]){
                 candidates.push_back(i);
             }
@@ -155,78 +157,77 @@ namespace CGL {
       Vector3D ji = j-i;
       Vector3D xi = x-i;
       Vector3D n = cross(ji, xi);
-      // cout << "i: " << i << endl;
-      // cout << "j: " << j << endl;
-      // cout << "x: " << x << endl;
+      // //cout << "i: " << i << endl;
+      // //cout << "j: " << j << endl;
+      // //cout << "x: " << x << endl;
       //
-      // cout << "ji: " << ji << endl;
-      // cout << "xi: " << xi << endl;
-      // cout << "cross(ji, xi): " << n << endl;
+      // //cout << "ji: " << ji << endl;
+      // //cout << "xi: " << xi << endl;
+      // //cout << "cross(ji, xi): " << n << endl;
 
       Vector3D p0 = cross(dot(ji, ji) * xi - dot(xi, xi) * ji, n) / (2 * dot(n, n)) + i;
-      // cout << dot(ji, ji) << endl;
-      // cout << "a" << dot(ji, ji) * xi - dot(xi, xi) * ji << endl;
-      // cout << "num: " << cross(dot(ji, ji) * xi - dot(xi, xi) * ji, n) << endl;
-      // cout << "den: " << (2 * dot(n, n)) << endl;
+      // //cout << dot(ji, ji) << endl;
+      // //cout << "a" << dot(ji, ji) * xi - dot(xi, xi) * ji << endl;
+      // //cout << "num: " << cross(dot(ji, ji) * xi - dot(xi, xi) * ji, n) << endl;
+      // //cout << "den: " << (2 * dot(n, n)) << endl;
       if (dot(n, n) == 0) {
         return Vector3D(9999, 9999, 9999);
       }
-      // cout << "frc: " << cross(dot(ji, ji) * xi - dot(xi, xi) * ji, n) / (2 * dot(n, n))<< endl;
-      // cout << "p0: " << p0 << endl;
-      // cout << "dot product" << dot(p0-i, p0-i) << endl;
+      // //cout << "frc: " << cross(dot(ji, ji) * xi - dot(xi, xi) * ji, n) / (2 * dot(n, n))<< endl;
+      // //cout << "p0: " << p0 << endl;
+      // //cout << "dot product" << dot(p0-i, p0-i) << endl;
       double t1 = sqrt((rho*rho - dot(p0-i, p0-i))/ dot(n, n));
       // Vector3D t2 = -sqrt((rho^2 - dot(p0-i, p0-i))/ dot(n, n));
-      // cout << "t1: " << t1 << endl;
+      // //cout << "t1: " << t1 << endl;
       Vector3D c1 = p0 + (n * t1);
-      // cout << "c1: " << c1 << endl;
+      // //cout << "c1: " << c1 << endl;
       return c1;
     }
     /**
      * Documentation goes here
      */
     bool BPAEdge::ball_pivot(double rho, Index *k) {
-        // cout << "BP: get edge's loop's front's vertices" << endl;
-        // cout << this->my_loop->my_front->vertices.size() << endl;
-        // cout << "yay" << endl;
+        // //cout << "BP: get edge's loop's front's vertices" << endl;
+        // //cout << this->my_loop->my_front->vertices.size() << endl;
+        // //cout << "yay" << endl;
         // BPAFront *front = this->my_loop->my_front;
         std::vector<Vector3D> vertices = global_front->vertices;
 
-        // cout << "success" << endl;
-        cout << this->i << endl;
-        cout << j << endl;
+        // //cout << "success" << endl;
+        //cout << this->i << endl;
+        //cout << j << endl;
         Vector3D m = (vertices[i] + vertices[j])/2;
         Vector3D i = vertices[this->i];
         Vector3D j = vertices[this->j];
         Vector3D o = vertices[this->o];
-        // cout << "i: " << i <<  "j: " << j << endl;
+        // //cout << "i: " << i <<  "j: " << j << endl;
         Vector3D c_ijo = get_sphere_center(i,j,o,rho);
         double r = (m - c_ijo).norm();
-        // cout << "o: " << vertices[this->o] << endl;
-        // cout << "m: " << m << endl;
-        // cout << "r: " << r << endl;
+        // //cout << "o: " << vertices[this->o] << endl;
+        // //cout << "m: " << m << endl;
+        // //cout << "r: " << r << endl;
         // find all candidate points x
         std::vector<Index> candidates = CGL::find_candidate_points(rho, m, this->i, this->j, global_front->vertices);
-        cout << "Ball pivot found candidate #: " << candidates.size() << endl;
+        //cout << "Ball pivot found candidate #: " << candidates.size() << endl;
         std::vector<Index> center_indices;
         std::vector<Vector3D> centers;
 
         // calculate all centers of spheres that touch i,j,x
         for(Index x_i : candidates){
-          cout << "considering " << x_i << endl;
+          //cout << "considering " << x_i << endl;
           Vector3D x = vertices[x_i];
           Vector3D c = get_sphere_center(i, j, x, rho);
           if (c.x == 9999 && c.y == 9999 && c.z == 9999) continue;
-              cout << "distance from m: "<< (c-m).norm() << endl;
-              cout << "on front? " << global_front->vertices_on_front[x_i] << endl;
-              cout << "used? " << global_front->vertices_used[x_i] << endl;
-              if ((c-m).norm() == r && (!global_front->vertices_on_front[x_i]
-                    && !global_front->vertices_used[x_i])) {
-                  cout << "center found: " << x_i << endl;
+              //cout << "distance from m: "<< (c-m).norm() << endl;
+              //cout << "on front? " << global_front->vertices_on_front[x_i] << endl;
+              //cout << "used? " << global_front->vertices_used[x_i] << endl;
+              if ((c-m).norm() == r && (global_front->vertices_on_front[x_i] || !global_front->vertices_used[x_i])) {
+                  //cout << "center found: " << x_i << endl;
                   center_indices.push_back(x_i);
                   centers.push_back(c);
             }
         }
-        cout << "centers size : " << centers.size() << endl;
+        //cout << "centers size : " << centers.size() << endl;
         if(centers.size() == 0){
           return false;
         }
@@ -237,13 +238,13 @@ namespace CGL {
         Index first_index;
         for (std::size_t i = 0; i != centers.size(); ++i) {
             a = centers[i] - m;
-            cout << "da dot " << dot(a,b) << endl;
+            //cout << "da dot " << dot(a,b) << endl;
              if (dot(a,b) > max_proj ){
                 max_proj = dot(a,b);
                 first_index = center_indices[i];
             }
         }
-        cout << "# centers: " << centers.size() << endl;
+        //cout << "# centers: " << centers.size() << endl;
         if (max_proj == std::numeric_limits<double>::lowest()){
             *k = 99999999;
             return false;
@@ -256,7 +257,7 @@ namespace CGL {
      * Documentation goes here
      */
     void BPAEdge::mark_not_active(void) {
-      cout << "Marking as inactive: " << this << endl;
+      //cout << "Marking as inactive: " << this << endl;
       this->is_active = false;
     }
 
@@ -275,46 +276,24 @@ namespace CGL {
     /**
      * Pulls any active edge from the front.
      */
-    //  FIXME: need to actually initialize edge
     BPAEdge *BPAFront::get_active_edge(void) {
         for (int i = 0; i < this->loops.size(); ++i) {
             BPAEdge* edge = loops[i]->start_edge;
-            printf("edge %i\n", i);
             if(edge->is_active) {
-                // cout << "wao the edge is active: " << edge << endl;
-                // printf("2\n");
-                // *e = *edge;
-                // printf("3\n");
-                // cout << "hello" << endl;
-                // cout << "yay" << endl;
-                // cout << "found active edge, testing its integrity" << endl;
-                // e->my_loop->my_front->vertices;
-                // cout << "success" << endl;
                 return edge;
             }
-            printf("loop: %d\n",i);
-            cout << edge << endl;
-            cout << edge->is_active << endl;
-            cout << loops[i]->start_edge << endl;
-
-            while(!edge->is_active && edge != loops[i]->start_edge){
+              edge = edge->next_edge;
+              //cout << "edge " << edge << endl;
+            while(edge->i != loops[i]->start_edge->i && edge->j != loops[i]->start_edge->j){
+                if (edge->is_active){
+                  return edge;
+                } 
                 edge = edge->next_edge;
-                printf("in while\n");
-                cout << edge << endl;
-                return edge;
+              //cout << "edge " << edge << endl;
+            //cout << "start edge " << loops[i]->start_edge << endl;
             }
-            // if(edge->is_active) {
-            //     *e = *edge;
-            //     cout << "hello" << endl;
-            //     cout << e->my_loop->my_front->vertices.size() << endl;
-            //     cout << "yay" << endl;
-            //     // cout << "found active edge, testing its integrity" << endl;
-            //     // e->my_loop->my_front->vertices;
-            //     // cout << "success" << endl;
-            //     return true;
-            // }
         }
-        cout << "NULLLITY" << endl;
+        //cout << "NULLLITY" << endl;
       return nullptr;
     }
 
@@ -325,7 +304,7 @@ namespace CGL {
      */
     BPALoop *BPAFront::insert_edge(BPAEdge *edge) {
       BPALoop *loop = new BPALoop(edge, this);
-      cout << "Inserting edge owned by front: " << edge << endl;
+      //cout << "Inserting edge owned by front: " << edge << endl;
       edge->my_loop = loop;
       this->loops.push_back(loop);
       return loop;
@@ -339,7 +318,7 @@ namespace CGL {
     bool BPAFront::find_seed_triangle(std::vector<Index> *indices, double rho) {
       //Find the vertex indices
       if (!(find_seed_trangle_indices(indices, rho))) {
-        printf("findseedtriindices failed\n");
+        // printf("findseedtriindices failed\n");
         return false;
       }
       Index i = (*indices)[0];
@@ -378,9 +357,9 @@ namespace CGL {
       // insert_edge(e0);
       // insert_edge(e1);
       // insert_edge(e2);
-      // cout << "hell01" << endl;
-      // cout << e0->my_loop->my_front->vertices.size() << endl;
-      // cout << "yay1" << endl;
+      // //cout << "hell01" << endl;
+      // //cout << e0->my_loop->my_front->vertices.size() << endl;
+      // //cout << "yay1" << endl;
 
 
       //TODO: to stuff with adding edge to front?
@@ -392,13 +371,13 @@ namespace CGL {
       Vector3D base_vtx, center, i_vtx, j_vtx;
       for (Index base_index = 0; base_index < vertices.size(); base_index++) {
         if (!vertices_used[base_index]) {
-          // cout << "base " << base_index << endl;
+          // //cout << "base " << base_index << endl;
           base_vtx = vertices[base_index];
           std::vector<Index> nearby_vertices = find_nearby_points(2 * rho, base_index, vertices);
-          cout << "len of near by points: " << nearby_vertices.size() << endl;
+          //cout << "len of near by points: " << nearby_vertices.size() << endl;
           for (Index i : nearby_vertices) {
             for (Index j : nearby_vertices) {
-              cout << "try with nearby vertices " << i << " and " << j << endl;
+              //cout << "try with nearby vertices " << i << " and " << j << endl;
               i_vtx = nearby_vertices[i];
               j_vtx = nearby_vertices[j];
               center = (base_vtx + i_vtx + j_vtx) / 3.0;
@@ -412,11 +391,11 @@ namespace CGL {
                   continue;
                 }
               // Otherwise we found one!
-              cout << "found one" << endl;
+              //cout << "found one" << endl;
               indices->push_back(base_index);
               indices->push_back(i);
               indices->push_back(j);
-              cout << "seed triangle indices" << base_index << " " << i << " " << j << endl;
+              //cout << "seed triangle indices" << base_index << " " << i << " " << j << endl;
               global_front->vertices_on_front[i] = true;
               global_front->vertices_on_front[j] = true;
               global_front->vertices_on_front[base_index] = true;
@@ -690,7 +669,7 @@ namespace CGL {
 
     VertexIter HalfedgeMesh::collapseEdge(EdgeIter e0){
         if (e0->isBoundary()) {
-            cout << "out" << endl;
+            //cout << "out" << endl;
             return VertexIter();
         }
 
@@ -1045,7 +1024,7 @@ namespace CGL {
     // TODO There's also some code you'll need to complete in "Shader/frag" file.
 
     Polymesh BPA_hardcode(std::vector<Vector3D>& vertices) {
-      cout << "BPA yo, voyteces: " << vertices.size() << endl;
+      //cout << "BPA yo, voyteces: " << vertices.size() << endl;
 
 
       // Build the HalfedgeMesh based on what we got

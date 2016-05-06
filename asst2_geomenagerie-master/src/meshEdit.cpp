@@ -325,7 +325,7 @@ namespace CGL {
         cout << "Found " << pc.vertices.size() << " vertices." << endl;
         BPAFront *front = new BPAFront(pc.vertices, &pm);
         cout << "Built front." << endl;
-        front->BPA(4.0);
+        front->BPA(3.0);
 
         // use init_polymesh(pm)
         cout << ".. built mesh ..." << endl;

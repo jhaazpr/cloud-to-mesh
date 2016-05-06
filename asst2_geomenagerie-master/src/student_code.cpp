@@ -43,18 +43,16 @@ namespace CGL {
                     output_triangle(edge->i, edge->j, k);
                     this->vertices_on_front[k] = true;
                     this->vertices_used[k] = true;
-
+                    cout << "loop size: " << global_front->my_loop.size() << endl;
                     join(edge, k);
-
+                    cout << "loop size: " << global_front->my_loop.size() << endl;
                     // add vertex to the front
                     this->vertices_on_front[k] = true;
                     // if (e_ki in F) glue(e_ik, e_ki , F);
                     // if (e_jk in F) glue(e_kj, e_jk, F);
                 }
-                 else{
-                   printf("makring edge not active\n");
-                    edge->mark_not_active();
-                }
+                edge->mark_not_active();
+                cout << "should be false" << edge->is_active << endl;
                 edge = get_active_edge();
             }
             if (!find_seed_triangle(&seed_triangle_indices,rho)){
@@ -260,7 +258,6 @@ namespace CGL {
     void BPAEdge::mark_not_active(void) {
       cout << "Marking as inactive: " << this << endl;
       this->is_active = false;
-      cout << "should be false" << this->is_active << endl;
     }
 
     BPALoop::BPALoop( BPAEdge *start_edge, BPAFront *my_front )
@@ -282,7 +279,7 @@ namespace CGL {
     BPAEdge *BPAFront::get_active_edge(void) {
         for (int i = 0; i < this->loops.size(); ++i) {
             BPAEdge* edge = loops[i]->start_edge;
-            // printf("1\n");
+            printf("edge %i\n", i);
             if(edge->is_active) {
                 // cout << "wao the edge is active: " << edge << endl;
                 // printf("2\n");

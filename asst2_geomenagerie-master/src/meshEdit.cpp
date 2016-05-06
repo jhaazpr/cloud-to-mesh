@@ -263,8 +263,8 @@ namespace CGL {
             case 'I':
                 showHUD = !showHUD;
                 break;
-            case 'o':
-            case 'O':
+            case 'c':
+            case 'C':
                 collapseSelectedEdge();
                 break;
             case 'f':

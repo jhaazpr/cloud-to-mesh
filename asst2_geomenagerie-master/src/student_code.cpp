@@ -287,7 +287,7 @@ namespace CGL {
             while(edge->i != loops[i]->start_edge->i && edge->j != loops[i]->start_edge->j){
                 if (edge->is_active){
                   return edge;
-                } 
+                }
                 edge = edge->next_edge;
               //cout << "edge " << edge << endl;
             //cout << "start edge " << loops[i]->start_edge << endl;
@@ -842,7 +842,7 @@ namespace CGL {
         }
 
         Size Start = mesh.nFaces();
-        while(mesh.nFaces() > 80) {
+        while(mesh.nFaces() > 200) {
             // Get the cheapest edge from the queue.
             EdgeRecord bestEdge = queue.top();
             // Remove the cheapest edge from the queue by calling pop().
